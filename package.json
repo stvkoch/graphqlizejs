@@ -1,0 +1,44 @@
+{
+  "name": "graphqlize",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build:server": "babel -d ./build ./ -s",
+    "build": "webpack --entry ./app/public/js/index.js --output-filename bundle.min.js --output-path ./app/public/js ",
+    "start": "./node_modules/nodemon/bin/nodemon.js --exec babel-node server.js",
+    "sequelize-skeleton": "./node_modules/sequelize-cli/lib/sequelize init:models; ./node_modules/sequelize-cli/lib/sequelize init:config",
+    "init-db": "cd /opt/lampp/bin/ && echo 'DROP DATABASE IF EXISTS api_node_demo; CREATE DATABASE api_node_demo CHARACTER SET utf8 COLLATE utf8_general_ci' | ./mysql -u root && cd -"
+  },
+  "dependencies": {
+    "apollo-boost": "^0.1.13",
+    "apollo-server-express": "^2.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.3",
+    "faker": "^4.1.0",
+    "graphql": "^0.13.2",
+    "graphql-tag": "^2.9.2",
+    "hasha": "^3.0.0",
+    "lodash.random": "^3.2.0",
+    "lodash.times": "^4.3.2",
+    "mysql2": "^1.5.3",
+    "nodemon": "^1.18.3",
+    "pg": "^7.8.0",
+    "prettier": "^1.16.3",
+    "sequelize": "^4.38.0",
+    "sqlite3": "^4.0.6"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "Steven Koch",
+  "license": "ISC",
+  "devDependencies": {
+    "sequelize-cli": "^4.0.0",
+    "sqlite": "^3.0.1",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0"
+  }
+}
