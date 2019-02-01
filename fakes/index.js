@@ -65,7 +65,7 @@ export function generateFakes(db) {
       db.category.bulkCreate(
         rangeUniqRandom(10, 1, 10).map(randomPosition => ({
           name: faker.commerce.department(),
-          description: faker.lorem.paragraph(),
+          description: faker.lorem.sentence(),
           position: randomPosition,
           countryId: "PT"
         }))
@@ -75,7 +75,7 @@ export function generateFakes(db) {
       db.category.bulkCreate(
         rangeUniqRandom(10, 11, 20).map(randomPosition => ({
           name: faker.commerce.department(),
-          description: faker.lorem.paragraph(),
+          description: faker.lorem.sentence(),
           position: randomPosition,
           countryId: "ID"
         }))
