@@ -12,7 +12,7 @@ You define once and everything it's available!
 - Queries (with associations!!!)
 - Mutations
 
-Sequelizejs support differents 'dialects' to persitir your data.
+Sequelizejs support differents 'dialects' to persist your data.
 
 - MySQL
 - SQLite
