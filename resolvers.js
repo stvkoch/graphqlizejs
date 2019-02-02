@@ -3,7 +3,7 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
     type: {},
     query: {},
     mutation: {},
-    ...getAdditionalresolvers(db)
+    ...getAdditionalresolvers(db),
   };
   //associations
   let resolvers = {
@@ -30,30 +30,43 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
             } = args;
             const newArgs = Object.keys(whereArgs).reduce((resolArgs, k) => {
               const value = whereArgs[k];
-              if (!(typeof value === "string" || value instanceof String)) {
+              if (!(typeof value === 'string' || value instanceof String)) {
                 return resolArgs;
               }
 
-              if (value.indexOf("%") !== -1) {
-                if (value.indexOf("!") === 0) {
+              if (value.indexOf('~') !== -1 && value.indexOf('\\~') === -1) {
+                const [descOperator, searchValue] = value.split('~');
+                const operator = Object.keys(db.Sequelize.Op).find(
+                  op => op === descOperator,
+                );
+                console.log('operator', operator);
+                if (operator) {
                   resolArgs[k] = {
-                    [db.Sequelize.Op.notLike]: resolArgs[k].slice(1)
+                    [db.Sequelize.Op[operator]]: resolArgs[k].slice(1),
+                  };
+                }
+                return resolArgs;
+              }
+              if (value.indexOf('%') !== -1) {
+                if (value.indexOf('!') === 0) {
+                  resolArgs[k] = {
+                    [db.Sequelize.Op.notILike]: resolArgs[k].slice(1),
                   };
                   return resolArgs;
                 }
-                resolArgs[k] = { [db.Sequelize.Op.like]: resolArgs[k] };
+                resolArgs[k] = {[db.Sequelize.Op.iLike]: resolArgs[k]};
               }
-              if (value.indexOf("!") === 0)
-                resolArgs[k] = { [db.Sequelize.Op.not]: resolArgs[k].slice(1) };
+              if (value.indexOf('!') === 0)
+                resolArgs[k] = {[db.Sequelize.Op.not]: resolArgs[k].slice(1)};
 
               return resolArgs;
             }, whereArgs);
-            return parent["get" + asFU]({
+            return parent['get' + asFU]({
               order,
               limit,
               offset,
               group,
-              where: newArgs
+              where: newArgs,
             });
           };
 
@@ -68,44 +81,44 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
               } = args;
               const newArgs = Object.keys(whereArgs).reduce((resolArgs, k) => {
                 const value = whereArgs[k];
-                if (!(typeof value === "string" || value instanceof String)) {
+                if (!(typeof value === 'string' || value instanceof String)) {
                   return resolArgs;
                 }
 
-                if (value.indexOf("%") !== -1) {
-                  if (value.indexOf("!") === 0) {
+                if (value.indexOf('%') !== -1) {
+                  if (value.indexOf('!') === 0) {
                     resolArgs[k] = {
-                      [db.Sequelize.Op.notLike]: resolArgs[k].slice(1)
+                      [db.Sequelize.Op.notLike]: resolArgs[k].slice(1),
                     };
                     return resolArgs;
                   }
-                  resolArgs[k] = { [db.Sequelize.Op.like]: resolArgs[k] };
+                  resolArgs[k] = {[db.Sequelize.Op.like]: resolArgs[k]};
                 }
-                if (value.indexOf("!") === 0)
+                if (value.indexOf('!') === 0)
                   resolArgs[k] = {
-                    [db.Sequelize.Op.not]: resolArgs[k].slice(1)
+                    [db.Sequelize.Op.not]: resolArgs[k].slice(1),
                   };
 
                 return resolArgs;
               }, whereArgs);
-              return parent["get" + asFU]({
-                attributes: [[db.Sequelize.fn("COUNT", "*"), "cnt"]],
+              return parent['get' + asFU]({
+                attributes: [[db.Sequelize.fn('COUNT', '*'), 'cnt']],
                 order,
                 limit,
                 offset,
                 group,
-                where: newArgs
-              }).then(result => result[0].get("cnt"));
+                where: newArgs,
+              }).then(result => result[0].get('cnt'));
             };
 
           return resolAssoci;
         },
-        {}
+        {},
       );
       resolv[typeName] = associates;
       return resolv;
     }, {}),
-    ...additionalResolvers.type
+    ...additionalResolvers.type,
   };
   //
   // Query
@@ -130,19 +143,32 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
 
         const newArgs = Object.keys(whereArgs).reduce((r, k) => {
           const value = whereArgs[k];
-          if (!(typeof value === "string" || value instanceof String)) {
+          if (!(typeof value === 'string' || value instanceof String)) {
             return r;
           }
 
-          if (value.indexOf("%") !== -1) {
-            if (value.indexOf("!") === 0) {
-              r[k] = { [db.Sequelize.Op.notLike]: r[k].slice(1) };
+          if (value.indexOf('~') !== -1 && value.indexOf('\\~') === -1) {
+            const [descOperator, searchValue] = value.split('~');
+            const operator = Object.keys(db.Sequelize.Op).find(
+              op => op === descOperator,
+            );
+            console.log('operator', operator);
+            if (operator) {
+              r[k] = {
+                [db.Sequelize.Op[operator]]: searchValue
+              };
+            }
+            return r;
+          }
+          if (value.indexOf('%') !== -1) {
+            if (value.indexOf('!') === 0) {
+              r[k] = {[db.Sequelize.Op.notLike]: r[k].slice(1)};
               return r;
             }
-            r[k] = { [db.Sequelize.Op.like]: r[k] };
+            r[k] = {[db.Sequelize.Op.like]: r[k]};
           }
-          if (value.indexOf("!") === 0)
-            r[k] = { [db.Sequelize.Op.not]: r[k].slice(1) };
+          if (value.indexOf('!') === 0)
+            r[k] = {[db.Sequelize.Op.not]: r[k].slice(1)};
 
           return r;
         }, whereArgs);
@@ -151,7 +177,7 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
           limit,
           offset,
           group,
-          where: newArgs
+          where: newArgs,
         });
       };
       resolv[`${plural}Count`] = (parent, args, context, info) => {
@@ -164,19 +190,19 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
         } = args;
         const newArgs = Object.keys(whereArgs).reduce((r, k) => {
           const value = whereArgs[k];
-          if (!(typeof value === "string" || value instanceof String)) {
+          if (!(typeof value === 'string' || value instanceof String)) {
             return r;
           }
 
-          if (value.indexOf("%") !== -1) {
-            if (value.indexOf("!") === 0) {
-              r[k] = { [db.Sequelize.Op.notLike]: r[k].slice(1) };
+          if (value.indexOf('%') !== -1) {
+            if (value.indexOf('!') === 0) {
+              r[k] = {[db.Sequelize.Op.notLike]: r[k].slice(1)};
               return r;
             }
-            r[k] = { [db.Sequelize.Op.like]: r[k] };
+            r[k] = {[db.Sequelize.Op.like]: r[k]};
           }
-          if (value.indexOf("!") === 0)
-            r[k] = { [db.Sequelize.Op.not]: r[k].slice(1) };
+          if (value.indexOf('!') === 0)
+            r[k] = {[db.Sequelize.Op.not]: r[k].slice(1)};
 
           return r;
         }, whereArgs);
@@ -185,14 +211,14 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
           limit,
           offset,
           group,
-          where: newArgs
+          where: newArgs,
         });
       };
       resolv[singular] = (parent, args, context, info) =>
-        model.findOne({ where: args });
+        model.findOne({where: args});
       return resolv;
     }, {}),
-    ...additionalResolvers.query
+    ...additionalResolvers.query,
   };
   // Mutations
   resolvers.Mutation = {
@@ -212,25 +238,25 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
       const singularFU = singular.charAt(0).toUpperCase() + singular.slice(1);
 
       if (model.generateGqCreate !== false)
-        resolv["create" + singularFU] = (parent, args, context, info) =>
+        resolv['create' + singularFU] = (parent, args, context, info) =>
           model.create(args.input);
 
       if (model.generateGqUpdate !== false)
-        resolv["update" + singularFU] = (parent, args, context, info) => {
-          const { input: updateValues, ...where } = args;
+        resolv['update' + singularFU] = (parent, args, context, info) => {
+          const {input: updateValues, ...where} = args;
           return model.update(updateValues, {
-            where
+            where,
           });
         };
 
       if (model.generateGqDelete !== false)
-        resolv["delete" + singularFU] = (parent, args, context, info) => {
-          return model.destroy({ where: args });
+        resolv['delete' + singularFU] = (parent, args, context, info) => {
+          return model.destroy({where: args});
         };
 
       return resolv;
     }, {}),
-    ...additionalResolvers.mutation
+    ...additionalResolvers.mutation,
   };
 
   return resolvers;
