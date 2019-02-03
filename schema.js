@@ -1,4 +1,5 @@
 const mapTypes = {
+  ID: "ID",
   TEXT: "String",
   STRING: "String",
   CHAR: "String",
@@ -19,6 +20,19 @@ const mapTypes = {
   DECIMAL: "Float",
   BOOLEAN: "Boolean"
 };
+
+export function generateOperatorInputs() {
+  return Object.values(mapTypes)
+    .filter((elem, pos, arr) => arr.indexOf(elem) == pos)
+    .map(
+      t => `
+    type _inputSearch${t} {
+      op: String
+      val: ${t}
+    }
+  `
+    );
+}
 
 export function generateTypes(db, additionalTypes = []) {
   return Object.keys(db.sequelize.models)
@@ -46,23 +60,20 @@ export function generateTypes(db, additionalTypes = []) {
             associations[association].options.name.singular ||
             associations[association].options.name;
           let associationName = a.charAt(0).toUpperCase() + a.slice(1);
+          const associationModel = db.sequelize.models[a];
 
           if (associations[association].isMultiAssociation) {
             return [
-              `${
-                associations[association].as
-              }(${generateTableHandlerFields().join(
-                ", "
-              )}): [${associationName}!]!`,
-              `${
-                associations[association].as
-              }Count(${generateTableHandlerFields().join(", ")}): Int!`
+              `${associations[association].as}(${generateSearchFields(
+                associationModel
+              ).join(", ")}): [${associationName}!]!`,
+              `${associations[association].as}Count(${generateSearchFields(
+                associationModel
+              ).join(", ")}): Int!`
             ].join("\n");
           }
 
-          return `${
-            associations[association].as
-          }(${generateTableHandlerFields().join(", ")}): ${associationName}!`;
+          return `${associations[association].as}: ${associationName}!`;
         })
         .filter(r => r)
         .join("\n");
@@ -103,7 +114,7 @@ export function generateIdFields(model, allowNull = false) {
     .map(attr => {
       if (!model._isPrimaryKey(attr)) return;
 
-      return `${attr}: ID${allowNull ? "" : "!"}`;
+      return `${attr}: [String${allowNull ? "" : "!"}]`;
     })
     .filter(r => r);
 }
@@ -120,8 +131,9 @@ export function generateSearchFields(model) {
   let fields = Object.keys(attrs)
     .map(attr => {
       if (attrs[attr].gqSearch === false) return;
-
-      const type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
+      let type = "[String]";
+      if (model.generateGqSearchOperation === false)
+        type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
 
       return `${attr}: ${type}`;
     })
@@ -214,7 +226,7 @@ export function generateQueries(db, additionalQueries = []) {
       return [
         `  ${plural}(${searchFields}): [${typeName}!]!`,
         `  ${plural}Count(${searchFields}): Int`,
-        `  ${singular}(${generateIdFields(model).join(", ")}): ${typeName}!`
+        `  ${singular}(${searchFields}): ${typeName}`
       ].join("\n");
     })
     .concat(additionalQueries)
@@ -270,6 +282,7 @@ export function generateMutations(db, additionalMutations = []) {
 export function generateSchema(db, opts) {
   opts = { query: [], type: [], mutation: [], ...opts };
   return (
+    generateOperatorInputs() +
     generateTypes(db, opts.type) +
     generateQueries(db, opts.query) +
     generateMutations(db, opts.mutation)

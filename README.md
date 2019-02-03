@@ -150,3 +150,47 @@ https://graphqlize.herokuapp.com
 #### Graphql
 
 https://graphqlize.herokuapp.com/graphql
+
+### Examples of queries that you can play
+
+```
+{
+  # IN operator
+  queryAsInOp: services(id: ["3", "7", "12"]) {
+    id
+    name
+    price
+  }
+  # operator combination AND
+  countQueryAsAndOp: servicesCount(price: ["gt~150", "lt~200"])
+  queryAsAndOp: services(price: ["gt~150", "lt~200"]) {
+    id
+    name
+    price
+  }
+  # you can also use conditions inside of yours associations
+  country(id: "PT") {
+    id
+    name
+    servicesCount(price: ["gt~150", "lt~200"])
+    services(price: ["gt~150", "lt~200"]) {
+      id
+      name
+      price
+    }
+  }
+  # we don't support directly OR, but in graphql you request more that one list
+  expensiveServices: services(price: ["gt~980"]) {
+    id
+    name
+    price
+  }
+  #OR
+  cheapServices:services(price: ["lt~20"]) {
+    id
+    name
+    price
+  }
+}
+
+```

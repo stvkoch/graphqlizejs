@@ -25,6 +25,7 @@ export default (sequelize, DataTypes) => {
     }
   );
 
+  Country.generateGqSearchOperation = true;
   Country.generateGqSearch = true;
   Country.generateGqCreate = true;
   Country.generateGqUpdate = false;
