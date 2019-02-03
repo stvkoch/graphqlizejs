@@ -3,7 +3,7 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
     type: {},
     query: {},
     mutation: {},
-    ...getAdditionalresolvers(db),
+    ...getAdditionalresolvers(db)
   };
   //associations
   let resolvers = {
@@ -21,104 +21,25 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
           const asFU = as.charAt(0).toUpperCase() + as.slice(1);
 
           resolAssoci[as] = (parent, args, context, info) => {
-            const {
-              _group: group,
-              _limit: limit,
-              _offset: offset,
-              _orderBy: order,
-              ...whereArgs
-            } = args;
-            const newArgs = Object.keys(whereArgs).reduce((resolArgs, k) => {
-              const value = whereArgs[k];
-              if (!(typeof value === 'string' || value instanceof String)) {
-                return resolArgs;
-              }
-
-              if (value.indexOf('~') !== -1 && value.indexOf('\\~') === -1) {
-                const [descOperator, searchValue] = value.split('~');
-                const operator = Object.keys(db.Sequelize.Op).find(
-                  op => op === descOperator,
-                );
-                console.log('operator', operator);
-                if (operator) {
-                  resolArgs[k] = {
-                    [db.Sequelize.Op[operator]]: resolArgs[k].slice(1),
-                  };
-                }
-                return resolArgs;
-              }
-              if (value.indexOf('%') !== -1) {
-                if (value.indexOf('!') === 0) {
-                  resolArgs[k] = {
-                    [db.Sequelize.Op.notILike]: resolArgs[k].slice(1),
-                  };
-                  return resolArgs;
-                }
-                resolArgs[k] = {[db.Sequelize.Op.iLike]: resolArgs[k]};
-              }
-              if (value.indexOf('!') === 0)
-                resolArgs[k] = {[db.Sequelize.Op.not]: resolArgs[k].slice(1)};
-
-              return resolArgs;
-            }, whereArgs);
-            return parent['get' + asFU]({
-              order,
-              limit,
-              offset,
-              group,
-              where: newArgs,
-            });
+            return parent["get" + asFU](generateFindArgs(db, args));
           };
 
           if (associations[association].isMultiAssociation)
             resolAssoci[`${as}Count`] = (parent, args, context, info) => {
-              const {
-                _group: group,
-                _limit: limit,
-                _offset: offset,
-                _orderBy: order,
-                ...whereArgs
-              } = args;
-              const newArgs = Object.keys(whereArgs).reduce((resolArgs, k) => {
-                const value = whereArgs[k];
-                if (!(typeof value === 'string' || value instanceof String)) {
-                  return resolArgs;
-                }
-
-                if (value.indexOf('%') !== -1) {
-                  if (value.indexOf('!') === 0) {
-                    resolArgs[k] = {
-                      [db.Sequelize.Op.notLike]: resolArgs[k].slice(1),
-                    };
-                    return resolArgs;
-                  }
-                  resolArgs[k] = {[db.Sequelize.Op.like]: resolArgs[k]};
-                }
-                if (value.indexOf('!') === 0)
-                  resolArgs[k] = {
-                    [db.Sequelize.Op.not]: resolArgs[k].slice(1),
-                  };
-
-                return resolArgs;
-              }, whereArgs);
-              return parent['get' + asFU]({
-                attributes: [[db.Sequelize.fn('COUNT', '*'), 'cnt']],
-                order,
-                limit,
-                offset,
-                group,
-                where: newArgs,
-              }).then(result => result[0].get('cnt'));
+              return parent["get" + asFU]({
+                attributes: [[db.Sequelize.fn("COUNT", "*"), "cnt"]],
+                ...generateFindArgs(db, args)
+              }).then(result => result[0].get("cnt"));
             };
 
           return resolAssoci;
         },
-        {},
+        {}
       );
       resolv[typeName] = associates;
       return resolv;
     }, {}),
-    ...additionalResolvers.type,
+    ...additionalResolvers.type
   };
   //
   // Query
@@ -133,92 +54,18 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
       const singular = model.options.name.singular;
 
       resolv[plural] = (parent, args, context, info) => {
-        const {
-          _group: group,
-          _limit: limit,
-          _offset: offset,
-          _orderBy: order,
-          ...whereArgs
-        } = args;
-
-        const newArgs = Object.keys(whereArgs).reduce((r, k) => {
-          const value = whereArgs[k];
-          if (!(typeof value === 'string' || value instanceof String)) {
-            return r;
-          }
-
-          if (value.indexOf('~') !== -1 && value.indexOf('\\~') === -1) {
-            const [descOperator, searchValue] = value.split('~');
-            const operator = Object.keys(db.Sequelize.Op).find(
-              op => op === descOperator,
-            );
-            console.log('operator', operator);
-            if (operator) {
-              r[k] = {
-                [db.Sequelize.Op[operator]]: searchValue
-              };
-            }
-            return r;
-          }
-          if (value.indexOf('%') !== -1) {
-            if (value.indexOf('!') === 0) {
-              r[k] = {[db.Sequelize.Op.notLike]: r[k].slice(1)};
-              return r;
-            }
-            r[k] = {[db.Sequelize.Op.like]: r[k]};
-          }
-          if (value.indexOf('!') === 0)
-            r[k] = {[db.Sequelize.Op.not]: r[k].slice(1)};
-
-          return r;
-        }, whereArgs);
-        return model.findAll({
-          order,
-          limit,
-          offset,
-          group,
-          where: newArgs,
-        });
+        return model.findAll(generateFindArgs(db, args));
       };
+
       resolv[`${plural}Count`] = (parent, args, context, info) => {
-        const {
-          _group: group,
-          _limit: limit,
-          _offset: offset,
-          _orderBy: order,
-          ...whereArgs
-        } = args;
-        const newArgs = Object.keys(whereArgs).reduce((r, k) => {
-          const value = whereArgs[k];
-          if (!(typeof value === 'string' || value instanceof String)) {
-            return r;
-          }
-
-          if (value.indexOf('%') !== -1) {
-            if (value.indexOf('!') === 0) {
-              r[k] = {[db.Sequelize.Op.notLike]: r[k].slice(1)};
-              return r;
-            }
-            r[k] = {[db.Sequelize.Op.like]: r[k]};
-          }
-          if (value.indexOf('!') === 0)
-            r[k] = {[db.Sequelize.Op.not]: r[k].slice(1)};
-
-          return r;
-        }, whereArgs);
-        return model.count({
-          order,
-          limit,
-          offset,
-          group,
-          where: newArgs,
-        });
+        return model.count(generateFindArgs(db, args));
       };
+
       resolv[singular] = (parent, args, context, info) =>
-        model.findOne({where: args});
+        model.findOne(generateFindArgs(db, args));
       return resolv;
     }, {}),
-    ...additionalResolvers.query,
+    ...additionalResolvers.query
   };
   // Mutations
   resolvers.Mutation = {
@@ -238,26 +85,92 @@ export function generateResolvers(db, getAdditionalresolvers = _ => ({})) {
       const singularFU = singular.charAt(0).toUpperCase() + singular.slice(1);
 
       if (model.generateGqCreate !== false)
-        resolv['create' + singularFU] = (parent, args, context, info) =>
+        resolv["create" + singularFU] = (parent, args, context, info) =>
           model.create(args.input);
 
       if (model.generateGqUpdate !== false)
-        resolv['update' + singularFU] = (parent, args, context, info) => {
-          const {input: updateValues, ...where} = args;
+        resolv["update" + singularFU] = (parent, args, context, info) => {
+          const { input: updateValues, ...where } = args;
           return model.update(updateValues, {
-            where,
+            where
           });
         };
 
       if (model.generateGqDelete !== false)
-        resolv['delete' + singularFU] = (parent, args, context, info) => {
-          return model.destroy({where: args});
+        resolv["delete" + singularFU] = (parent, args, context, info) => {
+          return model.destroy({ where: args });
         };
 
       return resolv;
     }, {}),
-    ...additionalResolvers.mutation,
+    ...additionalResolvers.mutation
   };
 
   return resolvers;
+}
+
+function generateFindArgs(db, args) {
+  const {
+    _group: group,
+    _limit: limit,
+    _offset: offset,
+    _orderBy: order,
+    ...whereArgs
+  } = args;
+
+  const where = Object.keys(whereArgs).reduce((r, k) => {
+    if (!r[k]) r[k] = {};
+    if (Array.isArray(whereArgs[k])) {
+      const values = whereArgs[k];
+      values.forEach(value => {
+        if (typeof value === "string" || value instanceof String) {
+          if (value.indexOf("~") !== -1 && value.indexOf("\\~") === -1) {
+            const [descOperator, searchValue] = value.split("~");
+            const operator = Object.keys(db.Sequelize.Op).find(
+              op => op === descOperator
+            );
+
+            if (operator && db.Sequelize.Op[operator]) {
+              r[k] = {
+                ...r[k],
+                [db.Sequelize.Op[operator]]: searchValue
+              };
+            }
+
+            return r;
+          }
+
+          if (value.indexOf("%") !== -1) {
+            if (value.indexOf("!") === 0) {
+              r[k] = {
+                ...r[k],
+                [db.Sequelize.Op.notLike]: value.slice(1)
+              };
+              return r;
+            }
+            r[k] = { ...r[k], [db.Sequelize.Op.like]: value };
+          }
+
+          if (value.indexOf("!") === 0) {
+            r[k] = { ...r[k], [db.Sequelize.Op.not]: value.slice(1) };
+            return r;
+          }
+        }
+        if (!r[k][db.Sequelize.Op.in]) r[k][db.Sequelize.Op.in] = [];
+        r[k] = {
+          ...r[k],
+          [db.Sequelize.Op.in]: [...r[k][db.Sequelize.Op.in], value]
+        };
+        return r;
+      });
+    }
+    return r;
+  }, {});
+  return {
+    order,
+    limit,
+    offset,
+    group,
+    where
+  };
 }
