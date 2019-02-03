@@ -1,6 +1,6 @@
 # Graphqlize
 
-v.0.0.1
+v.0.0.3
 
 Graphqlize automagic generate graphql server from your sequelizejs models!
 
