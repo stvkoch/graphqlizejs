@@ -1,6 +1,6 @@
 # Graphqlize
 
-v.0.0.3
+v.0.0.1
 
 Graphqlize automagic generate graphql server from your sequelizejs models!
 
@@ -19,61 +19,65 @@ Sequelizejs support differents 'dialects' to persist your data.
 - PostgreSQL
 - MSSQL
 
-Special conditions:
+## Queries and Filters
 
-- conditions start with ! will be as NOT operator
-- conditions with % will be avaluate with a LIKE operator
+Each field can be filtered by _\_inputStringOperator_ type.
 
-Pagination handlers:
+Generally the arguments of filters is:
+
+```
+fieldName: _inputStringOperator
+#...fields: _inputStringOperator
+_offset: Int
+_limit: Int
+_orderBy: [[String!]!]
+_group: [String!]
+```
+
+### Pagination handlers:
 
 - \_limit: Int
 - \_offset: Int
 - \_orderBy: Array[Array]
 - \_group: Array
 
+### orderBy
+
+_\_orderBy_ argument accept a array with fieldName and direction. Ex: ['username', 'DESC']
+
 ## Try your self!
 
 ```
 {
-  countries(name: "%indo%") {
+  servicesCount(price: {gte: "400", lte: "490"})
+  services (price: {gte: "400", lte: "490"}, _orderBy: [["price"]]) {
     id
     name
-    categoriesCount
-    servicesCount
-  }
-  porCount: countriesCount(name: "%por%")
-  notPorCount: countriesCount(name: "!%por%")
-  countriesCount
-  porCountries: countries(name: "%por%") {
-    id
-    name
-    servicesCount
-    services(_limit: 3, _orderBy: [["id", "DESC"]]) {
-      id
-      name
-    }
+    price
   }
 }
 ```
 
 ## Operators
 
-You can use ~ to indicate what operator you want apply.
+Graphqlize support same operators found on sequelize. You can pass one or more operator in same time:
 
 Example:
 
 ```
 {
-  countries(name: "like~%bra%") {
-    id
-    name
-    servicesCount
-    services{
+  {
+    countries(name: {like: "%bra%", notLike: "%il"} ) {
+      id
       name
+      servicesCount
+      services{
+        name
+      }
     }
   }
-  servicesCount
-  services (id: "gt~50"){
+  servicesCount(id: {gt: "50"})
+  services (id: {gt: "50"}){
     id
     name
   }
@@ -129,6 +133,7 @@ cd graphqlize
 npm i # or yarn
 npm start # or yarn
 # open url http://localhost:5000/graphql
+# can access complete generate schema in http://localhost:5000/schema
 ```
 
 ### It's awesome because SequelizeJs it's very powerfull!
