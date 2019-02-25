@@ -1,6 +1,6 @@
 {
   "name": "graphqlize",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "",
   "scripts": {
     "build:server": "babel -d ./build ./ -s",

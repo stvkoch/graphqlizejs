@@ -1,6 +1,6 @@
 # Graphqlize
 
-v.0.0.1
+v.0.0.3
 
 Graphqlize automagic generate graphql server from your sequelizejs models!
 
@@ -86,44 +86,48 @@ Example:
 
 ### Operators supported
 
-- eq: Symbol.for('eq'),
-- ne: Symbol.for('ne'),
-- gte: Symbol.for('gte'),
-- gt: Symbol.for('gt'),
-- lte: Symbol.for('lte'),
-- lt: Symbol.for('lt'),
-- not: Symbol.for('not'),
-- is: Symbol.for('is'),
-- in: Symbol.for('in'),
-- notIn: Symbol.for('notIn'),
-- like: Symbol.for('like'),
-- notLike: Symbol.for('notLike'),
-- iLike: Symbol.for('iLike'),
-- notILike: Symbol.for('notILike'),
-- startsWith: Symbol.for('startsWith'),
-- endsWith: Symbol.for('endsWith'),
-- substring: Symbol.for('substring'),
-- regexp: Symbol.for('regexp'),
-- notRegexp: Symbol.for('notRegexp'),
-- iRegexp: Symbol.for('iRegexp'),
-- notIRegexp: Symbol.for('notIRegexp'),
-- between: Symbol.for('between'),
-- notBetween: Symbol.for('notBetween'),
-- overlap: Symbol.for('overlap'),
-- contains: Symbol.for('contains'),
-- contained: Symbol.for('contained'),
-- adjacent: Symbol.for('adjacent'),
-- strictLeft: Symbol.for('strictLeft'),
-- strictRight: Symbol.for('strictRight'),
-- noExtendRight: Symbol.for('noExtendRight'),
-- noExtendLeft: Symbol.for('noExtendLeft'),
-- and: Symbol.for('and'),
-- or: Symbol.for('or'),
-- any: Symbol.for('any'),
-- all: Symbol.for('all'),
-- values: Symbol.for('values'),
-- col: Symbol.for('col'),
-- placeholder: Symbol.for('placeholder'),
+```
+input _inputStringOperator {
+  eq: String,
+  ne: String,
+  gte: String,
+  gt: String,
+  lte: String,
+  lt: String,
+  not: String,
+  is: [String],
+  in: [String],
+  notIn: [String],
+  like: String,
+  notLike: String,
+  iLike: String,
+  notILike: String,
+  startsWith: String,
+  endsWith: String,
+  substring: String,
+  regexp: String,
+  notRegexp: String,
+  iRegexp: String,
+  notIRegexp: String,
+  between: [String],
+  notBetween: [String],
+  overlap: [String],
+  contains: [String],
+  contained: [String],
+  adjacent: [String],
+  strictLeft: [String],
+  strictRight: [String],
+  noExtendRight: [String],
+  noExtendLeft: [String],
+  and: [String],
+  or: [String],
+  any: [String],
+  all: [String],
+  values: [String],
+  col: [String],
+  placeholder: [String],
+}
+```
 
 ## Install
 
@@ -161,41 +165,40 @@ https://graphqlize.herokuapp.com/graphql
 ```
 {
   # IN operator
-  queryAsInOp: services(id: ["3", "7", "12"]) {
+  queryAsInOp: services(id: { in: ["3", "7", "12"] }) {
     id
     name
     price
   }
   # operator combination AND
-  countQueryAsAndOp: servicesCount(price: ["gt~150", "lt~200"])
-  queryAsAndOp: services(price: ["gt~150", "lt~200"]) {
+  countQueryAsAndOp: servicesCount(price: { gt: "150", lt: "200" })
+  queryAsAndOp: services(price: { gt: "150", lt: "200" }) {
     id
     name
     price
   }
   # you can also use conditions inside of yours associations
-  country(id: "PT") {
+  country(id: { eq: "PT" }) {
     id
     name
-    servicesCount(price: ["gt~150", "lt~200"])
-    services(price: ["gt~150", "lt~200"]) {
+    servicesCount(price: { gt: "150", lt: "200" })
+    services(price: { gt: "150", lt: "200" }) {
       id
       name
       price
     }
   }
   # we don't support directly OR, but in graphql you request more that one list
-  expensiveServices: services(price: ["gt~980"]) {
+  expensiveServices: services(price: { gt: "980" }) {
     id
     name
     price
   }
   #OR
-  cheapServices:services(price: ["lt~20"]) {
+  cheapServices: services(price: { lt: "20" }) {
     id
     name
     price
   }
 }
-
 ```
