@@ -118,54 +118,35 @@ function generateFindArgs(db, args) {
     ...whereArgs
   } = args;
 
-  const where = Object.keys(whereArgs).reduce((r, k) => {
-    if (!r[k]) r[k] = {};
-    if (Array.isArray(whereArgs[k])) {
-      const values = whereArgs[k];
-      values.forEach(value => {
-        if (typeof value === "string" || value instanceof String) {
-          if (value.indexOf("~") !== -1 && value.indexOf("\\~") === -1) {
-            const [descOperator, searchValue] = value.split("~");
-            const operator = Object.keys(db.Sequelize.Op).find(
-              op => op === descOperator
-            );
 
-            if (operator && db.Sequelize.Op[operator]) {
-              r[k] = {
-                ...r[k],
-                [db.Sequelize.Op[operator]]: searchValue
-              };
-            }
 
-            return r;
-          }
+  const where = Object.keys(whereArgs).reduce((result, field) => {
+    if (!result[field]) result[field] = {};
 
-          if (value.indexOf("%") !== -1) {
-            if (value.indexOf("!") === 0) {
-              r[k] = {
-                ...r[k],
-                [db.Sequelize.Op.notLike]: value.slice(1)
-              };
-              return r;
-            }
-            r[k] = { ...r[k], [db.Sequelize.Op.like]: value };
-          }
 
-          if (value.indexOf("!") === 0) {
-            r[k] = { ...r[k], [db.Sequelize.Op.not]: value.slice(1) };
-            return r;
-          }
+
+    if (!Array.isArray(whereArgs[field]) && (typeof whereArgs[field] === "object")) {
+      Object.keys(whereArgs[field]).map(operator => {
+        if (operator && db.Sequelize.Op[operator]) {
+
+          const values = whereArgs[field][operator];
+
+          // values.forEach(value => {
+            result[field] = {
+              ...result[field],
+              [db.Sequelize.Op[operator]]: values
+            };
+          // });
         }
-        if (!r[k][db.Sequelize.Op.in]) r[k][db.Sequelize.Op.in] = [];
-        r[k] = {
-          ...r[k],
-          [db.Sequelize.Op.in]: [...r[k][db.Sequelize.Op.in], value]
-        };
-        return r;
       });
+
+      return result;
     }
-    return r;
+
+    return result;
   }, {});
+
+
   return {
     order,
     limit,

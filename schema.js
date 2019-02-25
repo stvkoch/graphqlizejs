@@ -21,17 +21,61 @@ const mapTypes = {
   BOOLEAN: "Boolean"
 };
 
+
+
 export function generateOperatorInputs() {
-  return Object.values(mapTypes)
-    .filter((elem, pos, arr) => arr.indexOf(elem) == pos)
-    .map(
-      t => `
-    type _inputSearch${t} {
-      op: String
-      val: ${t}
+  return `
+input _inputStringOperator {
+        eq: String,
+        ne: String,
+        gte: String,
+        gt: String,
+        lte: String,
+        lt: String,
+        not: String,
+        is: [String],
+        in: [String],
+        notIn: [String],
+        like: String,
+        notLike: String,
+        iLike: String,
+        notILike: String,
+        startsWith: String,
+        endsWith: String,
+        substring: String,
+        regexp: String,
+        notRegexp: String,
+        iRegexp: String,
+        notIRegexp: String,
+        between: [String],
+        notBetween: [String],
+        overlap: [String],
+        contains: [String],
+        contained: [String],
+        adjacent: [String],
+        strictLeft: [String],
+        strictRight: [String],
+        noExtendRight: [String],
+        noExtendLeft: [String],
+        and: [String],
+        or: [String],
+        any: [String],
+        all: [String],
+        values: [String],
+        col: [String],
+        placeholder: [String],
     }
-  `
-    );
+  `;
+  // return Object.values(mapTypes)
+  //   .filter((elem, pos, arr) => arr.indexOf(elem) == pos)
+  //   .map(
+  //     t => `
+  //   type _inputSearch${t} {
+  //     op: String
+  //     val: ${t}
+  //   }
+  // `
+  //   );
 }
 
 export function generateTypes(db, additionalTypes = []) {
@@ -114,7 +158,8 @@ export function generateIdFields(model, allowNull = false) {
     .map(attr => {
       if (!model._isPrimaryKey(attr)) return;
 
-      return `${attr}: [String${allowNull ? "" : "!"}]`;
+      // return `${attr}: [String${allowNull ? "" : "!"}]`;
+      return `${attr}: _inputStringOperator${allowNull ? "" : "!"}`;
     })
     .filter(r => r);
 }
@@ -128,12 +173,15 @@ export function generateIdFields(model, allowNull = false) {
  */
 export function generateSearchFields(model) {
   const attrs = model.attributes;
+
   let fields = Object.keys(attrs)
     .map(attr => {
       if (attrs[attr].gqSearch === false) return;
-      let type = "[String]";
+      // let type = "[String]";
+      let type = "_inputStringOperator";
       if (model.generateGqSearchOperation === false)
         type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
+
 
       return `${attr}: ${type}`;
     })
