@@ -18,10 +18,9 @@ const mapTypes = {
   REAL: "Float",
   DECIMALS: "Float",
   DECIMAL: "Float",
-  BOOLEAN: "Boolean"
+  BOOLEAN: "Boolean",
+  VIRTUAL: "String"
 };
-
-
 
 export function generateOperatorInputs() {
   return `
@@ -66,16 +65,6 @@ input _inputStringOperator {
         placeholder: [String],
     }
   `;
-  // return Object.values(mapTypes)
-  //   .filter((elem, pos, arr) => arr.indexOf(elem) == pos)
-  //   .map(
-  //     t => `
-  //   type _inputSearch${t} {
-  //     op: String
-  //     val: ${t}
-  //   }
-  // `
-  //   );
 }
 
 export function generateTypes(db, additionalTypes = []) {
@@ -90,7 +79,11 @@ export function generateTypes(db, additionalTypes = []) {
         .map(attr => {
           if (attrs[attr].primaryKey) return `${attr}: ID!`;
           const allowNull = attrs[attr].allowNull ? "" : "!";
-          const type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
+          let type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
+          if (attrs[attr].gqType) {
+            type = mapTypes[attrs[attr].gqType] || attrs[attr].gqType;
+          }
+
           return `  ${attr}: ${type}${allowNull}`;
         })
         .filter(r => r)
@@ -100,13 +93,27 @@ export function generateTypes(db, additionalTypes = []) {
 
       const associatesFields = Object.keys(associations)
         .map(association => {
-          const a =
+          let a =
             associations[association].options.name.singular ||
             associations[association].options.name;
-          let associationName = a.charAt(0).toUpperCase() + a.slice(1);
-          const associationModel = db.sequelize.models[a];
 
-          if (associations[association].isMultiAssociation) {
+          if (!db.sequelize.models[a])
+            a =
+              associations[association].target.name.singular ||
+              associations[association].target.name;
+
+          let associationModel = db.sequelize.models[a];
+
+          let associationName = a.charAt(0).toUpperCase() + a.slice(1);
+
+          if (associationName === "Item")
+            console.log("associations[association]", associations[association]);
+
+          if (
+            associations[association].isMultiAssociation &&
+            associationModel
+          ) {
+            console.log("isMultiassociation", a, associationModel);
             return [
               `${associations[association].as}(${generateSearchFields(
                 associationModel
@@ -157,8 +164,6 @@ export function generateIdFields(model, allowNull = false) {
   return Object.keys(attrs)
     .map(attr => {
       if (!model._isPrimaryKey(attr)) return;
-
-      // return `${attr}: [String${allowNull ? "" : "!"}]`;
       return `${attr}: _inputStringOperator${allowNull ? "" : "!"}`;
     })
     .filter(r => r);
@@ -176,12 +181,12 @@ export function generateSearchFields(model) {
 
   let fields = Object.keys(attrs)
     .map(attr => {
-      if (attrs[attr].gqSearch === false) return;
-      // let type = "[String]";
+      if (attrs[attr].gqSearch === false || attrs[attr].type.key === "VIRTUAL")
+        return;
+
       let type = "_inputStringOperator";
       if (model.generateGqSearchOperation === false)
         type = mapTypes[attrs[attr].type.key] || attrs[attr].type.key;
-
 
       return `${attr}: ${type}`;
     })
@@ -228,8 +233,6 @@ export function generateCreateFields(model, opts = {}) {
 
     return `${attr}: ${type}${allowNull}`;
   });
-
-  // if (opts.encapsuleWhere) fields.where = fields.filter(r => r).join("\n");
 
   return fields.filter(r => r);
 }
