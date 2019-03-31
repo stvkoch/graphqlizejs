@@ -1,0 +1,20 @@
+{
+  "development": {
+    "dialect": "sqlite",
+    "storage": "./database.sqlite"
+  },
+  "production": {
+    "use_env_variable": "DATABASE_URL"
+  },
+  "test": {
+    "dialect": "sqlite",
+    "storage": "./database.sqlite"
+  },
+  "template": {
+    "database": "database_test",
+    "dialect": "mysql",
+    "host": "127.0.0.1",
+    "password": null,
+    "username": "root"
+  }
+}
