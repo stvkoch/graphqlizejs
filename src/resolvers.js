@@ -1,4 +1,5 @@
 import upperFirst from "lodash.upperfirst";
+import first from "lodash.first";
 
 export function resolvers(db, getAdditionalresolvers = _ => ({})) {
   const additionalResolvers = {
@@ -96,16 +97,18 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
           model.create(args.input);
 
       if (model.gqUpdate !== false)
-        acc["update" + singularUF] = (parent, args, context, info) => {
-          const { input: updateValues, ...where } = args;
-          return model.update(updateValues, {
-            where
-          });
+        acc["update" + singularUF] = async (parent, args, context, info) => {
+          const { input: updateValues, where } = args;
+          const nwhere = generateFindArgs(db, where);
+          const resultDb = await model.update(updateValues, nwhere);
+          return first(resultDb);
         };
 
       if (model.gqDelete !== false)
         acc["delete" + singularUF] = (parent, args, context, info) => {
-          return model.destroy({ where: args });
+          const { where } = args;
+          const nwhere = generateFindArgs(db, where);
+          return model.destroy(nwhere);
         };
 
       return acc;

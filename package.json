@@ -15,12 +15,9 @@
   },
   "dependencies": {
     "lodash.concat": "^4.5.0",
+    "lodash.first": "^3.0.0",
     "lodash.groupby": "^4.6.0",
-    "lodash.pick": "^4.4.0",
-    "lodash.random": "^3.2.0",
-    "lodash.times": "^4.3.2",
     "lodash.upperfirst": "^4.3.1",
-    "nodemon": "^1.18.10",
     "sequelize": "^4.38.0"
   },
   "devDependencies": {
@@ -42,8 +39,12 @@
     "graphql": "^14.2.0",
     "graphql-tag": "^2.9.2",
     "hasha": "^3.0.0",
+    "lodash.pick": "^4.4.0",
+    "lodash.random": "^3.2.0",
+    "lodash.times": "^4.3.2",
     "mocha": "^6.0.2",
     "mysql2": "^1.5.3",
+    "nodemon": "^1.18.10",
     "pg": "^7.8.0",
     "prettier": "^1.16.4",
     "sequelize-cli": "^4.0.0",

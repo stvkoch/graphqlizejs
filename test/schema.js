@@ -402,7 +402,7 @@ describe("Schemas", function() {
           name: "Order",
           field: "total",
           type: "Float",
-          allowNull: false,
+          allowNull: true,
           collection: false
         },
         {
@@ -975,8 +975,8 @@ describe("Schemas", function() {
         `
     type Mutation {
       createAnimal( input: _inputCreateAnimal ): Animal!
-      updateAnimal( id: _inputIDOperator, input: _inputUpdateAnimal ): [Int]!
-      deleteAnimal( id: _inputIDOperator): Int!
+      updateAnimal( where: _inputWhereAnimal, input: _inputUpdateAnimal ): Int!
+      deleteAnimal( where:  _inputWhereAnimal): Int!
     }
   `
       );
@@ -988,6 +988,15 @@ describe("Schemas", function() {
 
     it("should generate AST input mutation schema simple model ", function() {
       const expectedFields = [
+        {
+          allowNull: true,
+          collection: false,
+          extend: null,
+          field: "id",
+          name: "_inputWhereAnimal",
+          schema: "input",
+          type: "_inputIDOperator"
+        },
         {
           schema: "input",
           extend: null,
@@ -1006,7 +1015,6 @@ describe("Schemas", function() {
           allowNull: true,
           collection: false
         },
-
         {
           schema: "input",
           extend: null,
@@ -1052,6 +1060,9 @@ describe("Schemas", function() {
     it("should generate schema input mutation simple model ", function() {
       const expectedSchemaString = formatSchema(
         `
+    input _inputWhereAnimal {
+      id: _inputIDOperator
+    }
     input _inputCreateAnimal {
         name: String
         createdAt: String

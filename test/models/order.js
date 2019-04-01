@@ -29,10 +29,14 @@ export default (sequelize, DataTypes) => {
       total: {
         type: DataTypes.VIRTUAL,
         gqType: "Float",
-        allowNull: false,
+        allowNull: true,
         get: function() {
           return this.getItems().then(items =>
-            parseFloat(items.reduce((acc, i) => acc + i.price, 0)).toFixed(2)
+            items
+              ? parseFloat(items.reduce((acc, i) => acc + i.price, 0)).toFixed(
+                  2
+                )
+              : 0
           );
         }
       }

@@ -133,12 +133,8 @@ export function generateMutationsFromAST(ast) {
             if (!idField) idField = astMutationsByName[0];
             return [
               `create${name}(input: _inputCreate${name}): ${name}!`,
-              `update${name}(${idField.field}: _input${
-                idField.type
-              }Operator, input: _inputUpdate${name}): [Int]!`,
-              `delete${name}(${idField.field}: _input${
-                idField.type
-              }Operator): Int!`
+              `update${name}(where: _inputWhere${name}, input: _inputUpdate${name}): Int!`,
+              `delete${name}(where: _inputWhere${name}): Int!`
             ].join("\n");
           })}
       }`;
@@ -415,10 +411,15 @@ export function generateAstInputMutations(model, modelName) {
 
   const inputCreateField = field("input", null)(`_inputCreate${modelName}`);
   const inputUpdateField = field("input", null)(`_inputUpdate${modelName}`);
+  const inputWhereField = field("input", null)(`_inputWhere${modelName}`);
 
   const mutationFields = Object.values(model.attributes).reduce(
     (acc, attribute) => {
       let type = attribute.type.key;
+
+      if (attribute.type instanceof model.sequelize.Sequelize.VIRTUAL)
+        return acc;
+
       let allowNull =
         attribute.allowNull !== undefined ? attribute.allowNull : true;
 
@@ -426,7 +427,26 @@ export function generateAstInputMutations(model, modelName) {
         attribute.primaryKey &&
         !(attribute.references && attribute.references.model)
       ) {
+        acc.push(
+          inputWhereField(attribute.field, "_inputIDOperator", allowNull, false)
+        );
         return acc;
+      }
+
+      if (
+        attribute.references &&
+        attribute.references.model &&
+        model.sequelize.models[attribute.references.model] &&
+        model.sequelize.models[attribute.references.model].primaryKeys &&
+        model.sequelize.models[attribute.references.model].primaryKeys[
+          [attribute.references.key]
+        ].primaryKey
+      ) {
+        type = "ID";
+      }
+
+      if (attribute.primaryKey) {
+        type = "ID";
       }
 
       if (
@@ -435,8 +455,13 @@ export function generateAstInputMutations(model, modelName) {
           model._timestampAttributes.updatedAt === attribute.field)
       )
         allowNull = true;
+
       acc.push(inputCreateField(attribute.field, type, allowNull, false));
       acc.push(inputUpdateField(attribute.field, type, allowNull, false));
+      type === "ID" &&
+        acc.push(
+          inputWhereField(attribute.field, "_inputIDOperator", allowNull, false)
+        );
 
       return acc;
     },

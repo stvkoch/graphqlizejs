@@ -22,9 +22,9 @@ describe("Resolvers", function() {
   let queryClient = null;
 
   before(async function() {
-    // await db.sequelize.drop();
-    // await db.sequelize.sync();
-    // await generateFakes(db);
+    await db.sequelize.drop();
+    await db.sequelize.sync();
+    await generateFakes(db);
     const typesAndQuerys = schema(db.sequelize.models);
     server = new ApolloServer({
       typeDefs: typesAndQuerys,
@@ -32,7 +32,6 @@ describe("Resolvers", function() {
     });
     const { query } = createTestClient(server);
     queryClient = query;
-    console.log("schema", formatSchema(typesAndQuerys));
   });
 
   describe("simple model", function() {
@@ -181,6 +180,7 @@ describe("Resolvers", function() {
     });
 
     describe("Mutation", function() {
+      let createdProductId = null;
       it("should create a product", async function() {
         const gqResult = await queryClient({
           query: gql`
@@ -199,36 +199,189 @@ describe("Resolvers", function() {
             }
           }
         });
-        console.log(gqResult);
         const dbResult = await db.sequelize.models.product.findByPk(
           gqResult.data.product.id
         );
+        createdProductId = gqResult.data.product.id;
 
         const expectedGqResult = converToStr(gqResult.data.product);
+
         const expectedDbResult = converToStr(
           pick(dbResult.toJSON(), ["id", "description", "price"])
         );
-        expect(expectedDbResult).to.be.eql(expectedGqResult);
         expect(expectedDbResult).to.not.be.null;
         expect(expectedGqResult).to.not.be.null;
-
-        // input _inputCreateProduct {
-        //   description: String!
-        //   price: Float!
-        //   createdAt: String!
-        //   updatedAt: String!
-        //   categoryId: Int
-        // }
+        expect(expectedDbResult).to.be.eql(expectedGqResult);
       });
-      it("should edit a product", async function() {});
-      it("should delete a product", async function() {});
-      it("should create a relation product order", async function() {});
-      it("should delete a relation product order", async function() {});
-      it("should create a order, products and relate together", async function() {});
+
+      it("should edit a product", async function() {
+        const newPrice = parseFloat((Math.random() * 100).toFixed(2));
+        const newDescription = "xpto 123";
+
+        const gqResult = await queryClient({
+          query: gql`
+            mutation UpdateProudt($id: ID, $product: _inputUpdateProduct) {
+              product: updateProduct(
+                where: { id: { eq: $id } }
+                input: $product
+              )
+            }
+          `,
+          variables: {
+            id: 10,
+            product: {
+              description: newDescription,
+              price: newPrice
+            }
+          }
+        });
+
+        const expectedGqResult = gqResult.data.product;
+        const dbResult = await db.sequelize.models.product.findByPk(10);
+        const expectedDbResult = pick(dbResult.toJSON(), [
+          "id",
+          "description",
+          "price"
+        ]);
+
+        expect(expectedDbResult).to.not.be.null;
+        expect(expectedGqResult).to.not.be.null;
+        expect(expectedGqResult).to.be.eql(1);
+        expect(newPrice).to.equal(expectedDbResult.price);
+        expect(newDescription).to.be.eql(expectedDbResult.description);
+      });
+
+      it("should delete a product", async function() {
+        const dbCheckExistResult = await db.sequelize.models.product.findByPk(
+          createdProductId
+        );
+
+        const deleteProduct = await queryClient({
+          query: gql`
+            mutation DeleteProudt($id: ID) {
+              product: deleteProduct(where: { id: { eq: $id } })
+            }
+          `,
+          variables: {
+            id: createdProductId
+          }
+        });
+
+        const quantityDeletedProduts = deleteProduct.data.product;
+
+        const shouldNotExist = await db.sequelize.models.product.findByPk(
+          createdProductId
+        );
+        expect(String(dbCheckExistResult.id)).to.be.equal(createdProductId);
+        expect(shouldNotExist).to.be.null;
+        expect(dbCheckExistResult).to.not.be.null;
+        expect(quantityDeletedProduts).to.be.eql(1);
+      });
+
+      let productId,
+        orderId = null;
+      it("should create a relation product order", async function() {
+        const gqGreateProductAndOrderResult = await queryClient({
+          query: gql`
+            mutation CreateProduct(
+              $order: _inputCreateOrder
+              $product: _inputCreateProduct
+            ) {
+              product: createProduct(input: $product) {
+                id
+                description
+                price
+              }
+              order: createOrder(input: $order) {
+                id
+                description
+              }
+            }
+          `,
+          variables: {
+            product: {
+              description: "My happy product",
+              price: 298.88
+            },
+            order: {
+              description: "Order the things what I need"
+            }
+          }
+        });
+
+        const gqCreateProductOrderResult = await queryClient({
+          query: gql`
+            mutation CreateOrderProduct(
+              $orderproduct: _inputCreateOrderproduct
+            ) {
+              orderproduct: createOrderproduct(input: $orderproduct) {
+                productId
+                orderId
+              }
+            }
+          `,
+          variables: {
+            orderproduct: {
+              orderId: gqGreateProductAndOrderResult.data.order.id,
+              productId: gqGreateProductAndOrderResult.data.product.id
+            }
+          }
+        });
+        productId = gqGreateProductAndOrderResult.data.product.id;
+        orderId = gqGreateProductAndOrderResult.data.order.id;
+        expect(
+          gqCreateProductOrderResult.data.orderproduct.productId
+        ).to.be.equal(gqGreateProductAndOrderResult.data.product.id);
+        expect(
+          gqCreateProductOrderResult.data.orderproduct.orderId
+        ).to.be.equal(gqGreateProductAndOrderResult.data.order.id);
+
+        const gqOrderResult = await queryClient({
+          query: gql`
+            query Order($id: _inputIDOperator) {
+              order(id: $id) {
+                id
+                description
+                itemsCount
+                items {
+                  id
+                  description
+                }
+              }
+            }
+          `,
+          variables: {
+            id: {
+              eq: gqGreateProductAndOrderResult.data.order.id
+            }
+          }
+        });
+        expect(gqOrderResult.data.order.itemsCount).to.be.equal(1);
+        expect(gqOrderResult.data.order.id).to.be.equal(
+          gqGreateProductAndOrderResult.data.order.id
+        );
+      });
+
+      it("should delete a relation product order", async function() {
+        const gqDeleteOrderProduct = await queryClient({
+          query: gql`
+            mutation OrderProduct($productId: ID, $orderId: ID) {
+              deleteOrderproduct(
+                where: {
+                  productId: { eq: $productId }
+                  orderId: { eq: $orderId }
+                }
+              )
+            }
+          `,
+          variables: {
+            productId: String(productId),
+            orderId: String(orderId)
+          }
+        });
+
+        expect(gqDeleteOrderProduct.data.deleteOrderproduct).to.be.equal(1);
+      });
     });
   });
 });
-// mutate({
-//   mutation: UPDATE_USER,
-//   variables: { id: 1, email: 'nancy@foo.co' }
-// });
