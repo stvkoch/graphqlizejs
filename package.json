@@ -1,17 +1,14 @@
 {
-  "name": "graphelize",
+  "name": "graphqlize",
   "version": "0.0.4",
-  "main": "index.js",
+  "main": "./src/index.js",
   "private": true,
   "keywords": [],
   "author": "Steven Koch",
   "license": "MIT",
   "scripts": {
-    "build:server": "babel -d ./build ./ -s",
-    "build": "webpack --entry ./app/public/js/index.js --output-filename bundle.min.js --output-path ./app/public/js ",
-    "start": "./node_modules/nodemon/bin/nodemon.js --exec babel-node server.js",
-    "test": "./node_modules/mocha/bin/mocha --require @babel/polyfill --require @babel/register",
-    "init-db": "cd /opt/lampp/bin/ && echo 'DROP DATABASE IF EXISTS api_node_demo; CREATE DATABASE api_node_demo CHARACTER SET utf8 COLLATE utf8_general_ci' | ./mysql -u root && cd -"
+    "start": "./node_modules/nodemon/bin/nodemon.js --exec babel-node ./example/server.js",
+    "test": "./node_modules/mocha/bin/mocha --require @babel/polyfill --require @babel/register"
   },
   "dependencies": {
     "lodash.concat": "^4.5.0",
@@ -42,6 +39,7 @@
     "lodash.pick": "^4.4.0",
     "lodash.random": "^3.2.0",
     "lodash.times": "^4.3.2",
+    "lodash.uniqby": "^4.7.0",
     "mocha": "^6.0.2",
     "mysql2": "^1.5.3",
     "nodemon": "^1.18.10",
