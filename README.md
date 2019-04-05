@@ -2,7 +2,7 @@
 
 v.0.1.0
 
-[![CI](https://api.travis-ci.org/stvkoch/graphqlize.svg?branch=master)](https://travis-ci.org/stvkoch/graphqlize)
+[![Build Status](https://travis-ci.com/stvkoch/graphqlize.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlize)
 [![NPM](https://img.shields.io/npm/v/graphqlize.svg)](https://www.npmjs.com/package/graphqlize) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 Graphqlize automagic generate dataTypes and resolvers for graphql server from your sequelizejs models!
