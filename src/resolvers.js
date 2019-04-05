@@ -74,11 +74,6 @@ export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
       ).toLowerCase();
 
       acc[plural] = (parent, args, context, info) => {
-        console.log(
-          "generateFindArgs(sequelize, args)\n",
-          args,
-          generateFindArgs(sequelize, args)
-        );
         return model.findAll(generateFindArgs(sequelize, args));
       };
 

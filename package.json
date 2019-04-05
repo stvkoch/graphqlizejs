@@ -1,6 +1,6 @@
 {
   "name": "graphqlize",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "main": "./src/index.js",
   "private": true,
   "keywords": [],
@@ -13,7 +13,6 @@
   "dependencies": {
     "lodash.concat": "^4.5.0",
     "lodash.first": "^3.0.0",
-    "lodash.groupby": "^4.6.0",
     "lodash.upperfirst": "^4.3.1",
     "sequelize": "^4.38.0"
   },

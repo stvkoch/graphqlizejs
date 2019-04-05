@@ -114,7 +114,6 @@ describe("Resolvers", function() {
           `,
           variables: { id: CUSTOMER_ID }
         });
-        console.log(gqResult);
         const expectedGqResult = gqResult.data.customer;
 
         //db
