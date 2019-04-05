@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/stvkoch/graphqlizejs.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlizejs)
 [![NPM](https://img.shields.io/npm/v/graphqlizejs.svg)](https://www.npmjs.com/package/graphqlizejs) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-Graphqlizejs automagic generate dataTypes and resolvers for graphql server from your sequelizejs models!
+Graphqlizejs automagic generate data types and resolvers for graphql servers from your sequelizejs models!
 
 > _it's awesome... really awesome!_
 
@@ -84,7 +84,7 @@ export default (sequelize, DataTypes) => {
 
 ```
 
-### Simple Queries With Conditions
+### Simple Queries
 
 ```
 query GetCategory {
@@ -97,7 +97,7 @@ query GetCategory {
 
 ### Simple Queries With Conditions
 
-To add conditions in your queries you should use \_inputWhere input create for each model.
+To add conditions in your queries you should use \_inputWhere input generated for each model. This kind inputs will hold field model and input operators for the type defined.
 
 ```
 query GetCategory($where: _inputWhereCategory) {
@@ -113,11 +113,14 @@ variable:
 }
 ```
 
-> To avoid collidions names of graphqlizejs generate types and your models/fields graphqlizejs will generate any internal names with underscore. Example: \_Count, \_inputs
+> To avoid collidions names, graphqlizejs generate input names and counter association fields starting with underscore character. Example: \_associationsCount, \_inputs.
+
 
 ### Simple Count Queries
 
-Each associate field has your own count field call by _underscore_ + _association name_ + _Count_ word.
+Each associate field defined in your model has your own counter field called by _underscore_ + _association name_ + _Count_ word.
+
+In the example, below look for \_servicesCount.
 
 ```
 query GetCategory {
@@ -136,7 +139,7 @@ query GetCategory {
 
 ### Association Queries
 
-Retrieve all services by category
+Retrieve all services by category:
 
 ```
 query GetCategory {
@@ -151,11 +154,12 @@ query GetCategory {
 }
 ```
 
-You also, can filter your associoations as you did "Simple Count Queries" example
+You also, can filter your associoations data as you did "Simple Queries With Conditions" example.
+
 
 ### Association Count Queries
 
-Each query also have your count query follow same name definition: _underscore_ + model name* + \_Count* word.
+Each query also have your counter association field follow same name definition: _underscore_ + model name* + \_Count* word.
 
 ```
 query GetCategoryCount {
@@ -166,14 +170,15 @@ query GetCategoryCount {
 
 ## Inputs Where
 
-For each model, graphqlize will create a graphql input with all available model fields to be used in you condition.
+For each model, graphqlize will create a graphql input with all available model fields to be used in you conditions.
 You will see that, the fields defined in your input not use the model type, instead it's used the type \_input _Type_ Operator\_ that will hold all operators supported by the model type specified.
 
 For instance _country_ model, graphqlize will generate the \__inputWhereCountry_.
 
+
 ## Inputs Operators
 
-Sequelize ORM support several query operators to allow filter your data using findAll method. For this reason was create \_inputTypeOperator.
+Sequelize ORM support several query operators to allow filtered your data using findAll method. For this reason was create \_inputTypeOperator.
 
 Most of types support the follow operators:
 
@@ -192,7 +197,7 @@ between
 notBetween
 ```
 
-String types support the follow additional operators:
+String type support the follow additional operators:
 
 ```
 like
@@ -214,9 +219,10 @@ strictLeft
 strictRight
 ```
 
+
 ## Inputs Create and Update
 
-To able to mutate your data you will need hold your data inside of input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models
+To able to mutate your data you will need to hold your data inside of input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models.
 
 ### Input Create
 
@@ -232,7 +238,7 @@ type _inputCreateCountry {
 }
 ```
 
-Note that wasn't create the input with the primary keys. If you want to enable graphqlize create the input with the primary keys set the model options with:
+> Note that graphqlizejs didn't create the input with the primary keys. If you want create or update yours primary keys, enable graphqlizejs to create the input with the primary keys setting the model options with:
 
 ```
 gqInputCreateWithPrimaryKeys: true
@@ -256,7 +262,7 @@ Same way, if you want enable update primary keys set the model option:
 gqInputUpdateWithPrimaryKeys: true
 ```
 
-### Pagination handlers inside of where:
+### Pagination handlers inside of input where type:
 
 - \_limit: Int
 - \_offset: Int
@@ -266,6 +272,7 @@ gqInputUpdateWithPrimaryKeys: true
 ### orderBy
 
 _\_orderBy_ argument accept a array with fieldName and direction. Ex: ['username', 'DESC']
+
 
 ## Install
 
@@ -277,6 +284,7 @@ npm start # or yarn
 # open url http://localhost:5000/graphql
 # can access complete generate schema in http://localhost:5000/schema
 ```
+
 
 ### It's awesome because SequelizeJs it's very powerfull!
 
