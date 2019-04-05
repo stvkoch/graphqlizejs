@@ -7,17 +7,22 @@ export default (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      name: DataTypes.STRING
+      name: DataTypes.STRING,
+      description: {
+        type: DataTypes.STRING,
+        allowNull: true
+      },
+      position: DataTypes.INTEGER
     },
     {
-      freezeTableName: true,
-      gqName: "Category",
-      gqAssociateCountField: true
+      freezeTableName: true
     }
   );
 
   Category.associate = models => {
-    Category.hasMany(models.product);
+    // Category.hasOne(Category, {as: 'Parent'});
+    Category.hasMany(models.service);
+    Category.belongsTo(models.country);
   };
 
   return Category;
