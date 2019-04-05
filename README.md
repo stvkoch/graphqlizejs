@@ -2,10 +2,10 @@
 
 v.0.1.0
 
-[![Build Status](https://travis-ci.com/stvkoch/graphqlize.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlize)
-[![NPM](https://img.shields.io/npm/v/graphqlize.svg)](https://www.npmjs.com/package/graphqlize) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Build Status](https://travis-ci.com/stvkoch/graphqlizejs.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlizejs)
+[![NPM](https://img.shields.io/npm/v/graphqlizejs.svg)](https://www.npmjs.com/package/graphqlizejs) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-Graphqlize automagic generate dataTypes and resolvers for graphql server from your sequelizejs models!
+Graphqlizejs automagic generate dataTypes and resolvers for graphql server from your sequelizejs models!
 
 > _it's awesome... really awesome!_
 
@@ -218,7 +218,7 @@ strictRight
 
 ## Inputs Create and Update
 
-To able to mutate your data you will need hold your data inside of input mutation type. Graphqlize will generate the \_inputCreate and \_inputUpdate for each model and _through_ models
+To able to mutate your data you will need hold your data inside of input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models
 
 ### Input Create
 
@@ -286,7 +286,7 @@ Do you know about sequelizejs?
 
 - No? Then checkout the site http://docs.sequelizejs.com/
 
-You can do a lot of things with sequelize and Graphqlize automagic generate graphql datatype and resolvers from your models
+You can do a lot of things with sequelize and Graphqlizejs automagic generate graphql datatype and resolvers from your models
 
 ### No patience?
 
