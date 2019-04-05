@@ -35,7 +35,7 @@ export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
           };
 
           if (association.isMultiAssociation)
-            accAssoc[`${associationFieldName}Count`] = (
+            accAssoc[`_${associationFieldName}Count`] = (
               parent,
               args,
               context,
@@ -74,12 +74,17 @@ export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
       ).toLowerCase();
 
       acc[plural] = (parent, args, context, info) => {
+        console.log(
+          "generateFindArgs(sequelize, args)\n",
+          args,
+          generateFindArgs(sequelize, args)
+        );
         return model.findAll(generateFindArgs(sequelize, args));
       };
 
-      // acc[`_${plural}Count`] = (parent, args, context, info) => {
-      //   return model.count(generateFindArgs(sequelize, args));
-      // };
+      acc[`_${plural}Count`] = (parent, args, context, info) => {
+        return model.count(generateFindArgs(sequelize, args));
+      };
 
       acc[singular] = (parent, args, context, info) => {
         return model.findOne(generateFindArgs(sequelize, args));

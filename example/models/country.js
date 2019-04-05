@@ -21,15 +21,11 @@ export default (sequelize, DataTypes) => {
       currencyCode: { type: DataTypes.STRING, allowNull: true }
     },
     {
-      freezeTableName: true
+      freezeTableName: true,
+      gqInputCreateWithPrimaryKeys: false,
+      gqInputUpdateWithPrimaryKeys: false
     }
   );
-
-  Country.generateGqSearchOperation = true;
-  Country.generateGqSearch = true;
-  Country.generateGqCreate = true;
-  Country.generateGqUpdate = false;
-  Country.generateGqTableHandler = true;
 
   Country.associate = models => {
     Country.hasMany(models.service);

@@ -108,13 +108,13 @@ describe("Resolvers", function() {
                 name
                 since
                 revenue
-                ordersCount
+                ordersCount: _ordersCount
               }
             }
           `,
           variables: { id: CUSTOMER_ID }
         });
-
+        console.log(gqResult);
         const expectedGqResult = gqResult.data.customer;
 
         //db
@@ -147,7 +147,7 @@ describe("Resolvers", function() {
                 name
                 since
                 revenue
-                ordersCount(where: { id: { gte: 10 } })
+                ordersCount: _ordersCount(where: { id: { gte: 10 } })
               }
             }
           `,
@@ -343,7 +343,7 @@ describe("Resolvers", function() {
               order(where: { id: $id }) {
                 id
                 description
-                itemsCount
+                itemsCount: _itemsCount
                 items {
                   id
                   description

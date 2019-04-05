@@ -1,17 +1,27 @@
 # Graphqlize
 
-v.0.0.3
+v.0.1.0
 
-Graphqlize automagic generate graphql server from your sequelizejs models!
+Graphqlize automagic generate dataTypes and resolvers for graphql server from your sequelizejs models!
 
 > _it's awesome... really awesome!_
 
-You define once and everything it's available!
+You define your models and everything it's available!
 
 - Inputs
+  - inputs wheres
+  - inputs operators
+  - inputs mutations
 - Types
-- Queries (with associations!!!)
+  - types models
+  - types associations
+- Queries
+  - queries models
+  - queries counters
 - Mutations
+  - create mutation
+  - update mutation
+  - delete mutation
 
 Sequelizejs support differents 'dialects' to persist your data.
 
@@ -20,53 +30,230 @@ Sequelizejs support differents 'dialects' to persist your data.
 - PostgreSQL
 - MSSQL
 
-## Inputs
+## Go to by examples
 
-First all you need understand what inputs graphqlize generate for you and what you can do with inputs them.
+Let's imagine that we have follow models (example folder):
 
-### Input Operators
+```
+// models/catagory.js file
+export default (sequelize, DataTypes) => {
+  const Category = sequelize.define(
+    "category",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      name: DataTypes.STRING
+    },
+    {
+      freezeTableName: true
+    }
+  );
+  Category.associate = models => {
+    Category.hasOne(models.category, { as: "parent", foreignKey: "parentId" });
+    Category.hasMany(models.service);
+  };
+  return Category;
+};
 
-Input Operators encapsulate the operators supported by sequelize for each type defined in your models.
+// models/service.js file
+export default (sequelize, DataTypes) => {
+  const Service = sequelize.define(
+    "service",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      name: DataTypes.STRING,
+      price: DataTypes.DECIMAL(10, 2)
+    },
+    {
+      freezeTableName: true
+    }
+  );
+  Service.associate = models => {
+    Service.belongsTo(models.category);
+  };
+  return Service;
+};
 
-http://docs.sequelizejs.com/manual/querying.html#operators
+```
 
-This allow you to add conditions in your graphql requests. Graphqlize will generate for each type found in yours sequelize models one input type operators.
+### Simple Queries With Conditions
 
-For instance if you model have the primary key field, the graphqlize will generate the \_inputIDOperator with all conditions operators that you could use to filter the data.
+```
+query GetCategory {
+  categories {
+    id
+    name
+  }
+}
+```
 
-### Input Where
+### Simple Queries With Conditions
 
-The "input where" will encapsulate the relation primary keys and input operator to be used in yours where conditions, generally in yours update and delete mutations.
+To add conditions in your queries you should use \_inputWhere input create for each model.
+
+```
+query GetCategory($where: _inputWhereCategory) {
+  categories(where: $where) {
+    id
+    name
+  }
+}
+
+variable:
+{
+  "where": {"name": {"like": "%u%"}}
+}
+```
+
+### Simple Count Queries
+
+Each associate field has your own count field call by _underscore_ + _association name_ + _Count_ word.
+
+```
+query GetCategory {
+  categories {
+    id
+    name
+    totalServices: _servicesCount
+    serviceCountStartU: _servicesCount(where: {name:{like:"%u%"}})
+    services(where: {name:{like:"%u%"}}) {
+      id
+      name
+    }
+  }
+}
+```
+
+### Association Queries
+
+Retrieve all services by category
+
+```
+query GetCategory {
+  categories {
+    id
+    name
+    services {
+      id
+      name
+    }
+  }
+}
+```
+
+You also, can filter your associoations as you did "Simple Count Queries" example
+
+### Association Count Queries
+
+Each query also have your count query follow same name definition: _underscore_ + model name* + \_Count* word.
+
+```
+query GetCategoryCount {
+  renameCategoryCount: _categoriesCount
+  _categoriesCount(where: {name:{like:"%u%"}})
+}
+```
+
+## Inputs Where
+
+For each model, graphqlize will create a graphql input with all available model fields to be used in you condition.
+You will see that, the fields defined in your input not use the model type, instead it's used the type \_input _Type_ Operator\_ that will hold all operators supported by the model type specified.
+
+For instance _country_ model, graphqlize will generate the \__inputWhereCountry_.
+
+## Inputs Operators
+
+Sequelize ORM support several query operators to allow filter your data using findAll method. For this reason was create \_inputTypeOperator.
+
+Most of types support the follow operators:
+
+```
+eq
+ne
+gte
+gt
+lte
+lt
+not
+is
+in
+notIn
+between
+notBetween
+```
+
+String types support the follow additional operators:
+
+```
+like
+notLike
+iLike
+notILike
+startsWith
+endsWith
+substring
+regexp
+notRegexp
+iRegexp
+notIRegexp
+overlap
+contains
+contained
+adjacent
+strictLeft
+strictRight
+```
+
+## Inputs Create and Update
+
+To able to mutate your data you will need hold your data inside of input mutation type. Graphqlize will generate the \_inputCreate and \_inputUpdate for each model and _through_ models
 
 ### Input Create
 
-The "input create" will hold the map field/data supported by specific model, because this each model have your own "input create" type.
+Example of country model:
 
-For instance: model Category will have your \_inputCreateCategory.
+```
+type _inputCreateCountry {
+  name: String!
+  callCode: String
+  currencyCode: String
+  createdAt: String
+  updatedAt: String
+}
+```
 
-> By default graphqlize don't generate input create with primary keys. If you want to add primary keys inside of your input create set the model option _gqInputMutationId_ as _true_
+Note that wasn't create the input with the primary keys. If you want to enable graphqlize create the input with the primary keys set the model options with:
+
+```
+gqInputCreateWithPrimaryKeys: true
+```
 
 ### Input Update
 
-The "input update" also will hold the data used by update the record. If you want update the primary key set the model options _gqInputMutationId_ as _true_.
-
-## Queries and Filters
-
-You can pass as argument
-Each field can be filtered by _\_inputStringOperator_ type.
-
-Generally the arguments of filters is:
-
 ```
-fieldName: _inputStringOperator
-#...fields: _inputStringOperator
-_offset: Int
-_limit: Int
-_orderBy: [[String!]!]
-_group: [String!]
+type _inputUpdateCountry {
+  name: String!
+  callCode: String
+  currencyCode: String
+  createdAt: String
+  updatedAt: String
+}
 ```
 
-### Pagination handlers:
+Same way, if you want enable update primary keys set the model option:
+
+```
+gqInputUpdateWithPrimaryKeys: true
+```
+
+### Pagination handlers inside of where:
 
 - \_limit: Int
 - \_offset: Int
@@ -76,90 +263,6 @@ _group: [String!]
 ### orderBy
 
 _\_orderBy_ argument accept a array with fieldName and direction. Ex: ['username', 'DESC']
-
-## Try your self!
-
-```
-{
-  servicesCount(price: {gte: "400", lte: "490"})
-  services (price: {gte: "400", lte: "490"}, _orderBy: [["price"]]) {
-    id
-    name
-    price
-  }
-}
-```
-
-## Operators
-
-Graphqlize support same operators found on sequelize. You can pass one or more operator in same time:
-
-Example:
-
-```
-{
-  {
-    countries(name: {like: "%bra%", notLike: "%il"} ) {
-      id
-      name
-      servicesCount
-      services{
-        name
-      }
-    }
-  }
-  servicesCount(id: {gt: "50"})
-  services (id: {gt: "50"}){
-    id
-    name
-  }
-}
-```
-
-### Operators supported
-
-```
-input _inputStringOperator {
-  eq: String,
-  ne: String,
-  gte: String,
-  gt: String,
-  lte: String,
-  lt: String,
-  not: String,
-  is: [String],
-  in: [String],
-  notIn: [String],
-  like: String,
-  notLike: String,
-  iLike: String,
-  notILike: String,
-  startsWith: String,
-  endsWith: String,
-  substring: String,
-  regexp: String,
-  notRegexp: String,
-  iRegexp: String,
-  notIRegexp: String,
-  between: [String],
-  notBetween: [String],
-  overlap: [String],
-  contains: [String],
-  contained: [String],
-  adjacent: [String],
-  strictLeft: [String],
-  strictRight: [String],
-  noExtendRight: [String],
-  noExtendLeft: [String],
-  and: [String],
-  or: [String],
-  any: [String],
-  all: [String],
-  values: [String],
-  col: [String],
-  placeholder: [String],
-}
-```
 
 ## Install
 
@@ -178,19 +281,17 @@ Do you know about sequelizejs?
 
 - No? Then checkout the site http://docs.sequelizejs.com/
 
-You can do a lot of things with sequelize and Graphqlize automagic generate graphql server from your models
+You can do a lot of things with sequelize and Graphqlize automagic generate graphql datatype and resolvers from your models
 
 ### No patience?
 
 OK, let check the demo?
 
-### Doc
-
-https://graphqlize.herokuapp.com
-
 #### Graphql
 
 https://graphqlize.herokuapp.com/graphql
+
+https://graphqlize.herokuapp.com/schema
 
 ### Examples of queries that you can play
 

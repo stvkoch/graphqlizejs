@@ -105,6 +105,7 @@ function generateInputCreate(sequelize) {
 
     Object.values(model.attributes).map(attribute => {
       if (
+        model.options.gqInputCreateWithPrimaryKeys !== true &&
         attribute.primaryKey &&
         !(attribute.references && attribute.references.model)
       ) {
@@ -158,7 +159,7 @@ function generateInputUpdate(sequelize) {
     if (!acc[modelName]) acc[modelName] = {};
 
     Object.values(model.attributes).map(attribute => {
-      if (attribute.primaryKey && !model.gqInputUpdateWithPrimaryKeys) {
+      if (attribute.primaryKey && !model.options.gqInputUpdateWithPrimaryKeys) {
         return acc;
       }
 
@@ -234,12 +235,15 @@ function generateTypeModels(sequelize) {
         type,
         associationType
       };
-      name = `${name}Count`;
-      acc[modelName][name] = {
-        name,
-        type: "Int!",
-        associationType
-      };
+
+      if (collection) {
+        name = `_${name}Count`;
+        acc[modelName][name] = {
+          name,
+          type: "Int!",
+          associationType
+        };
+      }
     });
     return acc;
   }, {});
@@ -283,6 +287,11 @@ function generateQueries(sequelize) {
       name: pluralModelName,
       input: name,
       type: `[${name}!]!`
+    };
+    acc[`_${pluralModelName}Count`] = {
+      name: `_${pluralModelName}Count`,
+      input: name,
+      type: `Int!`
     };
 
     return acc;

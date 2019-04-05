@@ -8,10 +8,7 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true
       },
       name: DataTypes.STRING,
-      description: {
-        type: DataTypes.STRING,
-        allowNull: true
-      },
+      description: DataTypes.STRING,
       position: DataTypes.INTEGER
     },
     {
@@ -20,7 +17,7 @@ export default (sequelize, DataTypes) => {
   );
 
   Category.associate = models => {
-    // Category.hasOne(Category, {as: 'Parent'});
+    Category.hasOne(models.category, { as: "parent", foreignKey: "parentId" });
     Category.hasMany(models.service);
     Category.belongsTo(models.country);
   };

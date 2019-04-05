@@ -61,13 +61,13 @@ app.use(cors());
 server.applyMiddleware({ app });
 app.use(express.static("app/public"));
 app.get("/schema", (_, res) => res.send("<pre>" + schemaGenerated + "</pre>"));
-// db.sequelize.drop().then(() => {
-//   db.sequelize.sync().then(() => {
-//     generateFakes(db);
-app.listen({ port }, () =>
-  console.log(
-    `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
-  )
-);
-//   });
-// });
+db.sequelize.drop().then(() => {
+  db.sequelize.sync().then(() => {
+    generateFakes(db);
+    app.listen({ port }, () =>
+      console.log(
+        `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
+      )
+    );
+  });
+});
