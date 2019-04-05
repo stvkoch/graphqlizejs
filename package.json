@@ -1,8 +1,15 @@
 {
   "name": "graphqlizejs",
-  "version": "0.1.1",
+  "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
+  "version": "0.1.2",
   "main": "./src/index.js",
-  "keywords": [],
+  "keywords": [
+    "sequelizejs",
+    "sequelize",
+    "graphql",
+    "apollo",
+    "ORM"
+  ],
   "author": "Steven Koch <stvkoch@gmail.com>",
   "license": "MIT",
   "scripts": {
