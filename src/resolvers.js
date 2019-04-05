@@ -1,5 +1,6 @@
 import upperFirst from "lodash.upperfirst";
 import first from "lodash.first";
+import Sequelize from "sequelize";
 
 function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -42,7 +43,7 @@ export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
               info
             ) => {
               return parent["get" + associationFieldNameType]({
-                attributes: [[sequelize.Sequelize.fn("COUNT", "*"), "cnt"]],
+                attributes: [[Sequelize.fn("COUNT", "*"), "cnt"]],
                 ...generateFindArgs(sequelize, args)
               }).then(result => result[0].get("cnt"));
             };
@@ -66,12 +67,8 @@ export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
 
       if (model.gqSearch === false) return;
 
-      const singular = sequelize.Sequelize.Utils.singularize(
-        modelName
-      ).toLowerCase();
-      const plural = sequelize.Sequelize.Utils.pluralize(
-        modelName
-      ).toLowerCase();
+      const singular = Sequelize.Utils.singularize(modelName).toLowerCase();
+      const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
       acc[plural] = (parent, args, context, info) => {
         return model.findAll(generateFindArgs(sequelize, args));
@@ -137,7 +134,7 @@ function generateFindArgs(sequelize, args) {
   } = rawWhere;
 
   function keyToOp(key) {
-    return sequelize.Sequelize.Op[key] || key;
+    return Sequelize.Op[key] || key;
   }
   function convertKeyToOperator(values) {
     if (!Array.isArray(values) && typeof values === "object") {

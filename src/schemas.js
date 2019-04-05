@@ -1,12 +1,31 @@
 import upperFirst from "lodash.upperfirst";
-
+import Sequelize from "sequelize";
 import { mapTypes } from "./types";
 import { operatorsAny, operatorsString } from "./operators";
+
+function assertNotUndefined(obj, msg) {
+  if (obj === undefined || obj === null)
+    throw Error(msg || `Object should be not a undefined or null`);
+}
+function assertSequelizeModel(model, msg) {
+  if (model === undefined || model === null)
+    throw Error(
+      msg ||
+        `Model should be instance of Sequelize Model, instead of ${
+          model.constructor.name
+        }`
+    );
+}
 
 /*
 Create your dataTypes from your models
 */
 export function schema(sequelize, extend = "") {
+  assertNotUndefined(
+    sequelize,
+    `schema function should receive a sequelize instance, received ${typeof sequelize}`
+  );
+
   return [
     generateInputOperators(sequelize),
     generateInputWhere(sequelize),
@@ -25,7 +44,8 @@ export function getModelName(model) {
 function generateInputOperators(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsTypes = models.reduce((acc, model) => {
-    Object.values(model.attributes).map(attribute => {
+    assertSequelizeModel(model);
+    Object.values(model.rawAttributes).map(attribute => {
       let type = attribute.type.key;
       if (attribute.primaryKey) {
         type = "ID";
@@ -68,9 +88,8 @@ function generateInputWhere(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.attributes).map(attribute => {
-      if (attribute.type instanceof model.sequelize.Sequelize.VIRTUAL)
-        return acc;
+    Object.values(model.rawAttributes).map(attribute => {
+      if (attribute.type instanceof Sequelize.VIRTUAL) return acc;
 
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
@@ -103,7 +122,7 @@ function generateInputCreate(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.attributes).map(attribute => {
+    Object.values(model.rawAttributes).map(attribute => {
       if (
         model.options.gqInputCreateWithPrimaryKeys !== true &&
         attribute.primaryKey &&
@@ -158,7 +177,7 @@ function generateInputUpdate(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.attributes).map(attribute => {
+    Object.values(model.rawAttributes).map(attribute => {
       if (attribute.primaryKey && !model.options.gqInputUpdateWithPrimaryKeys) {
         return acc;
       }
@@ -198,7 +217,7 @@ function generateTypeModels(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.attributes).map(attribute => {
+    Object.values(model.rawAttributes).map(attribute => {
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
         type = "ID";
@@ -271,12 +290,8 @@ function generateQueries(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsQueries = models.reduce((acc, model) => {
     let name = getModelName(model);
-    const singularModelName = sequelize.Sequelize.Utils.singularize(
-      name
-    ).toLowerCase();
-    const pluralModelName = sequelize.Sequelize.Utils.pluralize(
-      name
-    ).toLowerCase();
+    const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
+    const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
     name = upperFirst(name);
     acc[singularModelName] = {
       name: singularModelName,
