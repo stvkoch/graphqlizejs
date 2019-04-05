@@ -309,37 +309,37 @@ https://graphqlize.herokuapp.com/schema
 ```
 {
   # IN operator
-  queryAsInOp: services(id: { in: ["3", "7", "12"] }) {
+  queryAsInOp: services(where: {id: { in: ["3", "7", "12"] }}) {
     id
     name
     price
   }
   # operator combination AND
-  countQueryAsAndOp: servicesCount(price: { gt: "150", lt: "200" })
-  queryAsAndOp: services(price: { gt: "150", lt: "200" }) {
+  countQueryAsAndOp: _servicesCount(where: {price: { gt: "150", lt: "200" }})
+  queryAsAndOp: services(where: {price: { gt: "150", lt: "200" }}) {
     id
     name
     price
   }
   # you can also use conditions inside of yours associations
-  country(id: { eq: "PT" }) {
+  country(where: {id: { eq: "PT" }}) {
     id
     name
-    servicesCount(price: { gt: "150", lt: "200" })
-    services(price: { gt: "150", lt: "200" }) {
+    _servicesCount(where: {price: { gt: "150", lt: "200" }})
+    services(where: {price: { gt: "150", lt: "200" }}) {
       id
       name
       price
     }
   }
   # we don't support directly OR, but in graphql you request more that one list
-  expensiveServices: services(price: { gt: "980" }) {
+  expensiveServices: services(where: {price: { gt: "980" }}) {
     id
     name
     price
   }
   #OR
-  cheapServices: services(price: { lt: "20" }) {
+  cheapServices: services(where: {price: { lt: "20" }}) {
     id
     name
     price
