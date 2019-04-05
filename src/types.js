@@ -37,10 +37,7 @@ const gqTypes = [
   "Boolean"
 ];
 
-export function mapTypes(type) {
+export function mapTypes(type, absolute = false) {
+  if (absolute) return mapSequelizeToGraphql[type];
   return mapSequelizeToGraphql[type] || type;
-}
-
-export function hasTypes(type) {
-  return gqTypes.indexOf(type) !== -1;
 }

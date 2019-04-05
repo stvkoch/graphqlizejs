@@ -1,20 +1,23 @@
 import upperFirst from "lodash.upperfirst";
 import first from "lodash.first";
 
-export function resolvers(db, getAdditionalresolvers = _ => ({})) {
+function getModelName(model) {
+  return model.options.gqName || upperFirst(model.tableName);
+}
+export function resolvers(sequelize, getAdditionalresolvers = _ => ({})) {
   const additionalResolvers = {
     type: {},
     query: {},
     mutation: {},
-    ...getAdditionalresolvers(db)
+    ...getAdditionalresolvers(sequelize)
   };
 
   //associations
   let resolvers = {
-    ...Object.keys(db.sequelize.models).reduce((acc, modelName) => {
-      const model = db.sequelize.models[modelName];
+    ...Object.keys(sequelize.models).reduce((acc, modelName) => {
+      const model = sequelize.models[modelName];
       if (!model) return acc;
-      modelName = model.options.gqName || upperFirst(model.tableName);
+      modelName = getModelName(model);
       const associations = model.associations || {};
       // for each association field call get"AssociationField" method
       const associates = Object.keys(associations).reduce(
@@ -27,7 +30,7 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
 
           accAssoc[associationFieldName] = (parent, args, context, info) => {
             return parent["get" + associationFieldNameType](
-              generateFindArgs(db, args)
+              generateFindArgs(sequelize, args)
             );
           };
 
@@ -39,8 +42,8 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
               info
             ) => {
               return parent["get" + associationFieldNameType]({
-                attributes: [[db.Sequelize.fn("COUNT", "*"), "cnt"]],
-                ...generateFindArgs(db, args)
+                attributes: [[sequelize.Sequelize.fn("COUNT", "*"), "cnt"]],
+                ...generateFindArgs(sequelize, args)
               }).then(result => result[0].get("cnt"));
             };
 
@@ -56,26 +59,31 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
 
   // Query
   resolvers.Query = {
-    ...Object.keys(db.sequelize.models).reduce((acc, modelName) => {
-      const model = db.sequelize.models[modelName];
+    ...Object.keys(sequelize.models).reduce((acc, modelName) => {
+      const model = sequelize.models[modelName];
       if (!model) return acc;
-      modelName = model.options.gqName || upperFirst(model.tableName);
+      modelName = getModelName(model);
 
       if (model.gqSearch === false) return;
 
-      const plural = model.options.name.plural;
-      const singular = model.options.name.singular;
+      const singular = sequelize.Sequelize.Utils.singularize(
+        modelName
+      ).toLowerCase();
+      const plural = sequelize.Sequelize.Utils.pluralize(
+        modelName
+      ).toLowerCase();
 
       acc[plural] = (parent, args, context, info) => {
-        return model.findAll(generateFindArgs(db, args));
+        return model.findAll(generateFindArgs(sequelize, args));
       };
 
-      // acc[`${plural}Count`] = (parent, args, context, info) => {
-      //   return model.count(generateFindArgs(db, args));
+      // acc[`_${plural}Count`] = (parent, args, context, info) => {
+      //   return model.count(generateFindArgs(sequelize, args));
       // };
 
-      acc[singular] = (parent, args, context, info) =>
-        model.findOne(generateFindArgs(db, args));
+      acc[singular] = (parent, args, context, info) => {
+        return model.findOne(generateFindArgs(sequelize, args));
+      };
 
       return acc;
     }, {}),
@@ -84,8 +92,8 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
 
   // Mutations
   resolvers.Mutation = {
-    ...Object.keys(db.sequelize.models).reduce((acc, modelName) => {
-      const model = db.sequelize.models[modelName];
+    ...Object.keys(sequelize.models).reduce((acc, modelName) => {
+      const model = sequelize.models[modelName];
       if (!model) return acc;
       modelName = model.options.gqName || upperFirst(model.tableName);
 
@@ -98,16 +106,15 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
 
       if (model.gqUpdate !== false)
         acc["update" + singularUF] = async (parent, args, context, info) => {
-          const { input: updateValues, where } = args;
-          const nwhere = generateFindArgs(db, where);
+          const { input: updateValues } = args;
+          const nwhere = generateFindArgs(sequelize, args);
           const resultDb = await model.update(updateValues, nwhere);
           return first(resultDb);
         };
 
       if (model.gqDelete !== false)
         acc["delete" + singularUF] = (parent, args, context, info) => {
-          const { where } = args;
-          const nwhere = generateFindArgs(db, where);
+          const nwhere = generateFindArgs(sequelize, args);
           return model.destroy(nwhere);
         };
 
@@ -119,17 +126,18 @@ export function resolvers(db, getAdditionalresolvers = _ => ({})) {
   return resolvers;
 }
 
-function generateFindArgs(db, args) {
+function generateFindArgs(sequelize, args) {
+  const rawWhere = (args && args.where) || {};
   const {
     _group: group,
     _limit: limit,
     _offset: offset,
     _orderBy: order,
     ...whereArgs
-  } = args;
+  } = rawWhere;
 
   function keyToOp(key) {
-    return db.Sequelize.Op[key] || key;
+    return sequelize.Sequelize.Op[key] || key;
   }
   function convertKeyToOperator(values) {
     if (!Array.isArray(values) && typeof values === "object") {

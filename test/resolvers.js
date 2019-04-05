@@ -25,10 +25,10 @@ describe("Resolvers", function() {
     await db.sequelize.drop();
     await db.sequelize.sync();
     await generateFakes(db);
-    const typesAndQuerys = schema(db.sequelize.models);
+    const typesAndQuerys = schema(db.sequelize);
     server = new ApolloServer({
       typeDefs: typesAndQuerys,
-      resolvers: resolvers(db)
+      resolvers: resolvers(db.sequelize)
     });
     const { query } = createTestClient(server);
     queryClient = query;
@@ -41,14 +41,13 @@ describe("Resolvers", function() {
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
-              customer(id: { eq: $id }) {
+              customer(where: {id: { eq: $id }}) {
                 ${fields.join("\n")}
               }
             }
           `,
           variables: { id: 1 }
         });
-
         const dbResult = await db.sequelize.models.customer.findByPk(1);
         const expectedGqResult = converToStr(gqResult.data.customer);
         const expectedDbResult = converToStr(pick(dbResult.toJSON(), fields));
@@ -62,7 +61,7 @@ describe("Resolvers", function() {
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
-              customer(id: { eq: $id }) {
+              customer(where: { id: { eq: $id } }) {
                 id
                 name
                 since
@@ -104,7 +103,7 @@ describe("Resolvers", function() {
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
-              customer(id: { eq: $id }) {
+              customer(where: { id: { eq: $id } }) {
                 id
                 name
                 since
@@ -115,6 +114,7 @@ describe("Resolvers", function() {
           `,
           variables: { id: CUSTOMER_ID }
         });
+
         const expectedGqResult = gqResult.data.customer;
 
         //db
@@ -142,12 +142,12 @@ describe("Resolvers", function() {
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
-              customer(id: { eq: $id }) {
+              customer(where: { id: { eq: $id } }) {
                 id
                 name
                 since
                 revenue
-                ordersCount(id: { gte: 10 })
+                ordersCount(where: { id: { gte: 10 } })
               }
             }
           `,
@@ -199,6 +199,7 @@ describe("Resolvers", function() {
             }
           }
         });
+
         const dbResult = await db.sequelize.models.product.findByPk(
           gqResult.data.product.id
         );
@@ -339,7 +340,7 @@ describe("Resolvers", function() {
         const gqOrderResult = await queryClient({
           query: gql`
             query Order($id: _inputIDOperator) {
-              order(id: $id) {
+              order(where: { id: $id }) {
                 id
                 description
                 itemsCount
@@ -379,7 +380,6 @@ describe("Resolvers", function() {
             orderId: String(orderId)
           }
         });
-
         expect(gqDeleteOrderProduct.data.deleteOrderproduct).to.be.equal(1);
       });
     });

@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
-  const Category = sequelize.define(
-    "category",
+  const Animal = sequelize.define(
+    "animal",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -11,14 +11,9 @@ export default (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
-      gqName: "Category",
-      gqAssociateCountField: true
+      gqName: "Human"
     }
   );
 
-  Category.associate = models => {
-    Category.hasMany(models.product);
-  };
-
-  return Category;
+  return Animal;
 };
