@@ -115,6 +115,8 @@ variable:
 }
 ```
 
+> To avoid collidions names of graphqlizejs generate types and your models/fields graphqlizejs will generate any internal names with underscore. Example: \_Count, \_inputs
+
 ### Simple Count Queries
 
 Each associate field has your own count field call by _underscore_ + _association name_ + _Count_ word.
