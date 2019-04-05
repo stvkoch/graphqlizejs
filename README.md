@@ -1,4 +1,4 @@
-# Graphqlize
+# Graphqlizejs
 
 v.0.1.0
 

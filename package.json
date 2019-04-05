@@ -1,9 +1,9 @@
 {
-  "name": "graphqlize",
+  "name": "graphqlizejs",
   "version": "0.1.0",
   "main": "./src/index.js",
   "keywords": [],
-  "author": "Steven Koch",
+  "author": "Steven Koch <stvkoch@gmail.com>",
   "license": "MIT",
   "scripts": {
     "start": "./node_modules/nodemon/bin/nodemon.js --exec babel-node ./example/server.js",
