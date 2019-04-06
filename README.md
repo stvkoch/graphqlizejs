@@ -292,11 +292,11 @@ Do you know about sequelizejs?
 
 - No? Then checkout the site http://docs.sequelizejs.com/
 
-You can do a lot of things with sequelize and Graphqlizejs automagic generate graphql datatype and resolvers from your models
+You can do a lot of things with sequelizejs and Graphqlizejs automagic generate graphql datatype and resolvers from your models
 
 ### No patience?
 
-OK, let check the demo?
+OK, let's check the demo?
 
 #### Graphql
 
