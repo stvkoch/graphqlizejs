@@ -84,6 +84,29 @@ export default (sequelize, DataTypes) => {
 
 ```
 
+
+### Generating schema and resolvers
+
+```
+//...
+import { schema, resolvers } from "graphqlizejs";
+import db from './models';
+
+const schemaGenerated = schema(db.sequelize);
+const resolversGenerated = resolvers(db.sequelize);
+
+
+const server = new ApolloServer({
+  typeDefs: gql(schemaGenerated),
+  resolvers: resolversGenerated,
+  context: { db },
+  introspection: true,
+  playground: true
+});
+....
+
+```
+
 ### Simple Queries
 
 ```
