@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/stvkoch/graphqlizejs.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlizejs)
 [![NPM](https://img.shields.io/npm/v/graphqlizejs.svg)](https://www.npmjs.com/package/graphqlizejs) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-Graphqlizejs automagic generate data types and resolvers for graphql servers from your sequelizejs models!
+Graphqlizejs automatic generate data types and resolvers for graphql servers from your sequelizejs models!
 
 > _it's awesome... really awesome!_
 
