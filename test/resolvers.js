@@ -202,6 +202,7 @@ describe("Resolvers", function() {
         const dbResult = await db.sequelize.models.product.findByPk(
           gqResult.data.product.id
         );
+
         createdProductId = gqResult.data.product.id;
 
         const expectedGqResult = converToStr(gqResult.data.product);
