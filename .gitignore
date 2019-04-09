@@ -2,3 +2,4 @@
 node_modules
 *.log
 *.sqlite
+.twgit_features_subject
