@@ -105,11 +105,12 @@ export function resolvers(
 
       if (model.gqCreate !== false)
         acc["create" + singularUF] = async (parent, args, context, info) => {
-          const instance = model.create(args.input);
+          const instance = await model.create(args.input);
           pubsub &&
             pubsub.publish("create" + singularUF, {
               ["create" + singularUF]: instance
             });
+          return instance;
         };
 
       if (model.gqUpdate !== false)
