@@ -54,7 +54,11 @@ const configurations = {
     port: process.env.PORT || 443,
     hostname: "graphqlize.herokuapp.com"
   },
-  development: { ssl: false, port: 4000, hostname: "localhost" }
+  development: {
+    ssl: false,
+    port: process.env.PORT || 4000,
+    hostname: "localhost"
+  }
 };
 
 const environment = process.env.NODE_ENV || "development";
