@@ -1,13 +1,10 @@
 import express from "express";
 import { ApolloServer, gql, PubSub } from "apollo-server-express";
-import cors from "cors";
+import fs from "fs";
+import https from "https";
 import http from "http";
-
-// import hasha from "hasha";
+import hasha from "hasha";
 import prettier from "prettier";
-
-var env = process.env.NODE_ENV || "development";
-var config = require(__dirname + "/config/config.json")[env];
 import { schema, resolvers } from "../";
 import { generateFakes } from "./fakes";
 import db from "./models";
@@ -51,49 +48,63 @@ const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
   }
 }));
 
-const port = config.port;
-const wsPort = config.wsport;
-
-const server = new ApolloServer({
-  typeDefs: gql(schemaGenerated),
-  resolvers: resolversGenerated,
-  subscriptions: {
-    onConnect: (connectionParams, webSocket, context) => {
-      console.log("subscription connected");
-    },
-    onDisconnect: (webSocket, context) => {
-      console.log("subscription disconnected");
-    }
+const configurations = {
+  production: {
+    ssl: false,
+    port: process.env.PORT || 443,
+    hostname: "graphqlize.herokuapp.com"
   },
-  context: { db },
-  introspection: true,
-  playground: {
-    subscriptionEndpoint:
-      process.env.SUBSCRIPTION_ENDPOINT || config.subscriptionEndpoint
+  development: {
+    ssl: false,
+    port: process.env.PORT || 4000,
+    hostname: "localhost"
   }
+};
+
+const environment = process.env.NODE_ENV || "development";
+const config = configurations[environment];
+
+const apollo = new ApolloServer({
+  typeDefs: gql(schemaGenerated),
+  resolvers: resolversGenerated
 });
 
 const app = express();
-app.use(cors());
+apollo.applyMiddleware({ app });
+app.get("/", (_, res) =>
+  res.send(
+    `<div><a href="/graphql">Graphqli</a></div><pre>${schemaGenerated}</pre>`
+  )
+);
 
-const httpServer = http.createServer(app);
-server.installSubscriptionHandlers(httpServer);
-server.applyMiddleware({ app });
+let server;
+if (config.ssl) {
+  // Assumes certificates are in .ssl folder from package root. Make sure the files
+  // are secured.
+  server = https.createServer(
+    {
+      key: fs.readFileSync(`./ssl/${environment}/server.key`),
+      cert: fs.readFileSync(`./ssl/${environment}/server.crt`)
+    },
+    app
+  );
+} else {
+  server = http.createServer(app);
+}
 
-httpServer.listen(wsPort, () => {
-  console.log(`Websocket listening on port ${wsPort}`);
-});
+// Add subscription support
+apollo.installSubscriptionHandlers(server);
 
-// app.use(express.static("app/public"));
-app.get("/schema", (_, res) => res.send("<pre>" + schemaGenerated + "</pre>"));
 db.sequelize.drop().then(() => {
   db.sequelize.sync().then(() => {
     generateFakes(db);
-    app.listen({ port }, err => {
-      console.error(err);
+    server.listen({ port: config.port }, () =>
       console.log(
-        `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
-      );
-    });
+        "🚀 Server ready at",
+        `http${config.ssl ? "s" : ""}://${config.hostname}:${config.port}${
+          apollo.graphqlPath
+        }`
+      )
+    );
   });
 });
