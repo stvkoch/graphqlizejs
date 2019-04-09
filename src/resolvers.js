@@ -117,8 +117,8 @@ export function resolvers(
         acc["update" + singularUF] = async (parent, args, context, info) => {
           const { input: updateValues } = args;
           const nwhere = generateFindArgs(sequelize, args);
-          const instances = await model.findAll(nwhere);
           const resultDb = await model.update(updateValues, nwhere);
+          const instances = await model.findAll(nwhere);
           const result = first(resultDb);
           if (result && pubsub) {
             instances.map(instance =>
