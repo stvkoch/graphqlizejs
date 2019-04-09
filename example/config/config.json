@@ -1,14 +1,23 @@
 {
   "development": {
     "dialect": "sqlite",
-    "storage": "./database.sqlite"
+    "storage": "./database.sqlite",
+    "subscriptionEndpoint": "ws://localhost:5001/graphql",
+    "port": 5000,
+    "wsPort": 5001
   },
   "production": {
-    "use_env_variable": "DATABASE_URL"
+    "use_env_variable": "DATABASE_URL",
+    "subscriptionEndpoint": "ws://graphqlize.herokuapp.com:5001/graphql",
+    "port": 5000,
+    "wsPort": 5001
   },
   "test": {
     "dialect": "sqlite",
-    "storage": "./database.sqlite"
+    "storage": "./database.sqlite",
+    "subscriptionEndpoint": "ws://localhost:5001/graphql",
+    "port": 5000,
+    "wsPort": 5001
   },
   "template": {
     "database": "database_test",
