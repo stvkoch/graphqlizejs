@@ -68,7 +68,8 @@ const server = new ApolloServer({
   context: { db },
   introspection: true,
   playground: {
-    subscriptionEndpoint: config.subscriptionEndpoint
+    subscriptionEndpoint:
+      process.env.SUBSCRIPTION_ENDPOINT || config.subscriptionEndpoint
   }
 });
 
