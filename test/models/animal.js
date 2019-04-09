@@ -11,7 +11,11 @@ export default (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
-      gqName: "Animal"
+      gqName: "Animal",
+      gqOnCreate: (instance, options, parent, args, context, info) => {},
+      gqSubscriptionCreate: true,
+      gqSubscriptionUpdate: true,
+      gqSubscriptionDelete: true
     }
   );
 

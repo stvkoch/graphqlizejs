@@ -23,7 +23,10 @@ export default (sequelize, DataTypes) => {
     {
       freezeTableName: true,
       gqInputCreateWithPrimaryKeys: false,
-      gqInputUpdateWithPrimaryKeys: false
+      gqInputUpdateWithPrimaryKeys: false,
+      gqSubscriptionCreate: true,
+      gqSubscriptionUpdate: true,
+      gqSubscriptionDelete: true
     }
   );
 

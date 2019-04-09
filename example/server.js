@@ -1,6 +1,8 @@
 import express from "express";
-import { ApolloServer, gql } from "apollo-server-express";
+import { ApolloServer, gql, PubSub } from "apollo-server-express";
 import cors from "cors";
+import http from "http";
+
 // import hasha from "hasha";
 import prettier from "prettier";
 
@@ -8,6 +10,7 @@ import { schema, resolvers } from "../";
 import { generateFakes } from "./fakes";
 import db from "./models";
 
+const pubsub = new PubSub();
 const extend = "";
 // `
 // extend type Mutation{
@@ -19,7 +22,7 @@ const schemaGenerated = prettier.format(schema(db.sequelize, extend), {
   parser: "graphql"
 });
 
-const resolversGenerated = resolvers(db.sequelize, sequelize => ({
+const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
   mutation: {
     // // https://blog.apollographql.com/file-uploads-with-apollo-server-2-0-5db2f3f60675
     // async singleUpload(parent, { file }) {
@@ -47,27 +50,48 @@ const resolversGenerated = resolvers(db.sequelize, sequelize => ({
 }));
 
 const port = process.env.PORT || 5000;
+const wsPort = port + 1;
 
 const server = new ApolloServer({
   typeDefs: gql(schemaGenerated),
   resolvers: resolversGenerated,
+  subscriptions: {
+    onConnect: (connectionParams, webSocket, context) => {
+      console.log("subscription connected");
+    },
+    onDisconnect: (webSocket, context) => {
+      console.log("subscription disconnected");
+    }
+  },
   context: { db },
   introspection: true,
-  playground: true
+  playground: {
+    subscriptionEndpoint: `ws://localhost:${wsPort}/graphql`
+  }
 });
 
 const app = express();
 app.use(cors());
+
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
 server.applyMiddleware({ app });
-app.use(express.static("app/public"));
-app.get("/schema", (_, res) => res.send("<pre>" + schemaGenerated + "</pre>"));
-db.sequelize.drop().then(() => {
-  db.sequelize.sync().then(() => {
-    generateFakes(db);
-    app.listen({ port }, () =>
-      console.log(
-        `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
-      )
-    );
-  });
+
+httpServer.listen(wsPort, () => {
+  console.log(`Websocket listening on port ${wsPort}`);
 });
+
+// app.use(express.static("app/public"));
+app.get("/schema", (_, res) => res.send("<pre>" + schemaGenerated + "</pre>"));
+// db.sequelize.drop().then(() => {
+//   db.sequelize.sync().then(() => {
+//     generateFakes(db);
+
+app.listen({ port }, err => {
+  console.error(err);
+  console.log(
+    `🚀 Server ready at http://localhost:${port}${server.graphqlPath}`
+  );
+});
+//   });
+// });

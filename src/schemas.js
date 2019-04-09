@@ -34,6 +34,7 @@ export function schema(sequelize, extend = "") {
     generateTypeModels(sequelize),
     generateQueries(sequelize),
     generateMutations(sequelize),
+    generateSubscriptions(sequelize),
     extend
   ].join("\n");
 }
@@ -352,6 +353,51 @@ function generateMutations(sequelize) {
     ${Object.values(modelsMutations)
       .map(mutation => {
         return `${mutation.name}(${mutation.arguments}): ${mutation.type}`;
+      })
+      .join("\n")}
+  }`;
+}
+// gqSubscriptionCreate: true,
+// gqSubscriptionUpdate: true,
+// gqSubscriptionDelete: true
+function generateSubscriptions(sequelize) {
+  const models = Object.values(sequelize.models);
+  const modelsSubscriptions = models.reduce((acc, model) => {
+    const name = upperFirst(getModelName(model));
+
+    let operation = `create${name}`;
+    if (model.options.gqSubscriptionCreate)
+      acc[operation] = {
+        name: operation,
+        arguments: `where: _inputWhere${name}`,
+        type: `${name}`
+      };
+    operation = `update${name}`;
+    if (model.options.gqSubscriptionUpdate)
+      acc[operation] = {
+        name: operation,
+        arguments: `where: _inputWhere${name}`,
+        type: `${name}`
+      };
+    operation = `delete${name}`;
+    if (model.options.gqSubscriptionDelete)
+      acc[operation] = {
+        name: operation,
+        arguments: `where: _inputWhere${name}`,
+        type: `${name}`
+      };
+
+    return acc;
+  }, {});
+
+  if (!Object.keys(modelsSubscriptions).length > 0) return "";
+
+  return `type Subscription {
+    ${Object.values(modelsSubscriptions)
+      .map(subscription => {
+        return `${subscription.name}(${subscription.arguments}): ${
+          subscription.type
+        }`;
       })
       .join("\n")}
   }`;
