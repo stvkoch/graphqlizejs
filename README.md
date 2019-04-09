@@ -23,6 +23,10 @@ You define your models and everything it's available!
   - create mutation
   - update mutation
   - delete mutation
+- Subscriptions
+  - create
+  - update
+  - delete
 
 Sequelizejs support differents 'dialects' to persist your data.
 
@@ -84,7 +88,6 @@ export default (sequelize, DataTypes) => {
 
 ```
 
-
 ### Generating schema and resolvers
 
 ```
@@ -138,7 +141,6 @@ variable:
 
 > To avoid collidions names, graphqlizejs generate input names and counter association fields starting with underscore character. Example: \_associationsCount, \_inputs.
 
-
 ### Simple Count Queries
 
 Each associate field defined in your model has your own counter field called by _underscore_ + _association name_ + _Count_ word.
@@ -179,7 +181,6 @@ query GetCategory {
 
 You also, can filter your associoations data as you did "Simple Queries With Conditions" example.
 
-
 ### Association Count Queries
 
 Each query also have your counter association field follow same name definition: _underscore_ + model name* + \_Count* word.
@@ -197,7 +198,6 @@ For each model, graphqlize will create a graphql input with all available model 
 You will see that, the fields defined in your input not use the model type, instead it's used the type \_input _Type_ Operator\_ that will hold all operators supported by the model type specified.
 
 For instance _country_ model, graphqlize will generate the \__inputWhereCountry_.
-
 
 ## Inputs Operators
 
@@ -241,7 +241,6 @@ adjacent
 strictLeft
 strictRight
 ```
-
 
 ## Inputs Create and Update
 
@@ -296,6 +295,36 @@ gqInputUpdateWithPrimaryKeys: true
 
 _\_orderBy_ argument accept a array with fieldName and direction. Ex: ['username', 'DESC']
 
+### Subscriptions
+
+You can subscribe changes using graphqlizejs subscriptions generated for each mutation by setting:
+
+```
+gqSubscriptionCreate: true,
+gqSubscriptionUpdate: true,
+gqSubscriptionDelete: true
+```
+
+#### Example Subscription
+
+```
+subscription {
+  updateCountry(where: { id: { eq: "PT" } }) {
+    id
+    name
+    serviceCount: _servicesCount
+  }
+}
+```
+
+```
+mutation {
+  updateCountry(
+    where: { id: { eq: "PT" } },
+    input: { name: "Purtugaal" }
+  )
+}
+```
 
 ## Install
 
@@ -307,7 +336,6 @@ npm start # or yarn
 # open url http://localhost:5000/graphql
 # can access complete generate schema in http://localhost:5000/schema
 ```
-
 
 ### It's awesome because SequelizeJs it's very powerfull!
 
