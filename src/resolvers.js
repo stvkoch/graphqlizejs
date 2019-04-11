@@ -150,7 +150,7 @@ export function resolvers(
     ...additionalResolvers.mutation
   };
 
-  const matchOperatorSupport = {
+  const supportSubscriptionOperators = {
     eq: (value, match) => value === match,
     ne: (value, match) => value !== match,
     gte: (value, match) => value >= match,
@@ -168,10 +168,10 @@ export function resolvers(
     if (!data || !where) return true;
     for (let field in where) {
       if (!data[field]) continue;
-      for (let operator in matchOperatorSupport) {
+      for (let operator in supportSubscriptionOperators) {
         if (where[field][operator]) {
           try {
-            return matchOperatorSupport[operator](
+            return supportSubscriptionOperators[operator](
               data[field],
               where[field][operator]
             );
@@ -183,6 +183,7 @@ export function resolvers(
     }
     return false;
   }
+
   // Subscriptions
   const subscriptions = {
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
@@ -194,6 +195,7 @@ export function resolvers(
 
       if (model.options.gqSubscriptionCreate) {
         acc[`create${singularUF}`] = {
+          resolve: model.options.gqSubscriptionCreate.resolve,
           subscribe: withFilter(
             () => {
               return pubsub && pubsub.asyncIterator(["create" + singularUF]);
@@ -204,8 +206,10 @@ export function resolvers(
           )
         };
       }
+
       if (model.options.gqSubscriptionUpdate) {
         acc["update" + singularUF] = {
+          resolve: model.options.gqSubscriptionUpdate.resolve,
           subscribe: withFilter(
             () => {
               return pubsub && pubsub.asyncIterator(["update" + singularUF]);
@@ -216,8 +220,10 @@ export function resolvers(
           )
         };
       }
+
       if (model.options.gqSubscriptionDelete) {
         acc["delete" + singularUF] = {
+          resolve: model.options.gqSubscriptionDelete.resolve,
           subscribe: withFilter(
             () => {
               return pubsub && pubsub.asyncIterator(["delete" + singularUF]);
@@ -234,7 +240,6 @@ export function resolvers(
   };
 
   if (Object.keys(subscriptions).length > 0) {
-    console.log("with resolver subscription");
     resolvers.Subscription = subscriptions;
   }
 
