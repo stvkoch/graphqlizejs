@@ -1,27 +1,15 @@
-
-codecov:
-  notify:
-    require_ci_to_pass: yes
-
+# Team Yaml
 coverage:
-  precision: 2
   round: down
-  range: "70...100"
+  precision: 5
 
-  status:
-    project: yes
-    patch: yes
-    changes: no
+# Repository Yaml
+coverage:
+  round: up
+  range: 0..10
 
-parsers:
-  gcov:
-    branch_detection:
-      conditional: yes
-      loop: yes
-      method: no
-      macro: no
-
-comment:
-  layout: "header, diff"
-  behavior: default
-  require_changes: no
+# Used in Codecov after updating
+coverage:
+  round: up
+  range: 0..10
+  precision: 5
