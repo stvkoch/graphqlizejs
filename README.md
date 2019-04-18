@@ -331,8 +331,8 @@ mutation {
 ```
 git clone https://github.com/stvkoch/graphqlize.git
 cd graphqlize
-npm i # or yarn
-npm start # or yarn
+yarn install# or npm
+yarn example # or npm
 # open url http://localhost:5000/graphql
 # can access complete generate schema in http://localhost:5000/schema
 ```

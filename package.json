@@ -13,6 +13,7 @@
   "author": "Steven Koch <stvkoch@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "example": "./node_modules/nodemon/bin/nodemon.js --exec babel-node ./example/server.js",
     "start": "./node_modules/nodemon/bin/nodemon.js --exec babel-node ./example/server.js",
     "test": "./node_modules/mocha/bin/mocha --require @babel/polyfill --require @babel/register",
     "prepublish-watch": "./node_modules/nodemon/bin/nodemon.js --exec yarn prepublish",
