@@ -55,9 +55,9 @@ OK, let's check the demo?
 
 #### Graphql
 
-https://graphqlize.herokuapp.com/graphql
+graphql> https://graphqlize.herokuapp.com/graphql
 
-https://graphqlize.herokuapp.com/schema
+schema> https://graphqlize.herokuapp.com/
 
 ### Examples of queries that you can play
 
