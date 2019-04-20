@@ -27,13 +27,80 @@ You define your models and everything it's available!
   - create
   - update
   - delete
+  
+  
+  
+## Install
 
-Sequelizejs support differents 'dialects' to persist your data.
+```
+git clone https://github.com/stvkoch/graphqlize.git
+cd graphqlize
+yarn install# or npm
+yarn example # or npm
+# open url http://localhost:4000/graphql
+# can access complete generate schema in http://localhost:4000
+```
 
-- MySQL
-- SQLite
-- PostgreSQL
-- MSSQL
+### It's awesome because SequelizeJs it's very powerfull!
+
+Do you know about sequelizejs?
+
+- No? Then checkout the site http://docs.sequelizejs.com/
+
+You can do a lot of things with sequelizejs and Graphqlizejs automagic generate graphql datatype and resolvers from your models
+
+### No patience?
+
+OK, let's check the demo?
+
+#### Graphql
+
+graphql> https://graphqlize.herokuapp.com/graphql
+
+schema> https://graphqlize.herokuapp.com/
+
+### Examples of queries that you can play
+
+```
+{
+  # IN operator
+  queryAsInOp: services(where: {id: { in: ["3", "7", "12"] }}) {
+    id
+    name
+    price
+  }
+  # operator combination AND
+  countQueryAsAndOp: _servicesCount(where: {price: { gt: 150, lt: 200 }})
+  queryAsAndOp: services(where: {price: { gt: 150, lt: 200 }}) {
+    id
+    name
+    price
+  }
+  # you can also use conditions inside of yours associations
+  country(where: {id: { eq: "PT" }}) {
+    id
+    name
+    _servicesCount(where: {price: { gt: 150, lt: 200 }})
+    services(where: {price: { gt: 150, lt: 200 }}) {
+      id
+      name
+      price
+    }
+  }
+  # we don't support directly OR, but in graphql you request more that one list
+  expensiveServices: services(where: {price: { gt: 980 }}) {
+    id
+    name
+    price
+  }
+  #OR
+  cheapServices: services(where: {price: { lt: 20 }}) {
+    id
+    name
+    price
+  }
+}
+```
 
 ## Go to by examples
 
@@ -323,77 +390,5 @@ mutation {
     where: { id: { eq: "PT" } },
     input: { name: "Purtugaal" }
   )
-}
-```
-
-## Install
-
-```
-git clone https://github.com/stvkoch/graphqlize.git
-cd graphqlize
-yarn install# or npm
-yarn example # or npm
-# open url http://localhost:5000/graphql
-# can access complete generate schema in http://localhost:5000/schema
-```
-
-### It's awesome because SequelizeJs it's very powerfull!
-
-Do you know about sequelizejs?
-
-- No? Then checkout the site http://docs.sequelizejs.com/
-
-You can do a lot of things with sequelizejs and Graphqlizejs automagic generate graphql datatype and resolvers from your models
-
-### No patience?
-
-OK, let's check the demo?
-
-#### Graphql
-
-https://graphqlize.herokuapp.com/graphql
-
-https://graphqlize.herokuapp.com/schema
-
-### Examples of queries that you can play
-
-```
-{
-  # IN operator
-  queryAsInOp: services(where: {id: { in: ["3", "7", "12"] }}) {
-    id
-    name
-    price
-  }
-  # operator combination AND
-  countQueryAsAndOp: _servicesCount(where: {price: { gt: "150", lt: "200" }})
-  queryAsAndOp: services(where: {price: { gt: "150", lt: "200" }}) {
-    id
-    name
-    price
-  }
-  # you can also use conditions inside of yours associations
-  country(where: {id: { eq: "PT" }}) {
-    id
-    name
-    _servicesCount(where: {price: { gt: "150", lt: "200" }})
-    services(where: {price: { gt: "150", lt: "200" }}) {
-      id
-      name
-      price
-    }
-  }
-  # we don't support directly OR, but in graphql you request more that one list
-  expensiveServices: services(where: {price: { gt: "980" }}) {
-    id
-    name
-    price
-  }
-  #OR
-  cheapServices: services(where: {price: { lt: "20" }}) {
-    id
-    name
-    price
-  }
 }
 ```
