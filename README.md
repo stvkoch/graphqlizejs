@@ -70,8 +70,8 @@ https://graphqlize.herokuapp.com/schema
     price
   }
   # operator combination AND
-  countQueryAsAndOp: _servicesCount(where: {price: { gt: "150", lt: "200" }})
-  queryAsAndOp: services(where: {price: { gt: "150", lt: "200" }}) {
+  countQueryAsAndOp: _servicesCount(where: {price: { gt: 150, lt: 200 }})
+  queryAsAndOp: services(where: {price: { gt: 150, lt: 200 }}) {
     id
     name
     price
@@ -80,21 +80,21 @@ https://graphqlize.herokuapp.com/schema
   country(where: {id: { eq: "PT" }}) {
     id
     name
-    _servicesCount(where: {price: { gt: "150", lt: "200" }})
-    services(where: {price: { gt: "150", lt: "200" }}) {
+    _servicesCount(where: {price: { gt: 150, lt: 200 }})
+    services(where: {price: { gt: 150, lt: 200 }}) {
       id
       name
       price
     }
   }
   # we don't support directly OR, but in graphql you request more that one list
-  expensiveServices: services(where: {price: { gt: "980" }}) {
+  expensiveServices: services(where: {price: { gt: 980 }}) {
     id
     name
     price
   }
   #OR
-  cheapServices: services(where: {price: { lt: "20" }}) {
+  cheapServices: services(where: {price: { lt: 20 }}) {
     id
     name
     price
