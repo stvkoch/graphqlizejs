@@ -1,7 +1,7 @@
-import upperFirst from "lodash.upperfirst";
-import first from "lodash.first";
-import Sequelize from "sequelize";
-import { withFilter } from "apollo-server";
+import upperFirst from 'lodash.upperfirst';
+import first from 'lodash.first';
+import Sequelize from 'sequelize';
+import { withFilter } from 'apollo-server';
 
 function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -16,7 +16,7 @@ export function resolvers(
     query: {},
     mutation: {},
     subscription: {},
-    ...getAdditionalresolvers(sequelize, pubsub)
+    ...getAdditionalresolvers(sequelize, pubsub),
   };
 
   //associations
@@ -36,7 +36,7 @@ export function resolvers(
           const associationFieldNameType = upperFirst(associationFieldName);
 
           accAssoc[associationFieldName] = (parent, args, context, info) => {
-            return parent["get" + associationFieldNameType](
+            return parent['get' + associationFieldNameType](
               generateFindArgs(sequelize, args)
             );
           };
@@ -48,10 +48,10 @@ export function resolvers(
               context,
               info
             ) => {
-              return parent["get" + associationFieldNameType]({
-                attributes: [[Sequelize.fn("COUNT", "*"), "cnt"]],
-                ...generateFindArgs(sequelize, args)
-              }).then(result => result[0].get("cnt"));
+              return parent['get' + associationFieldNameType]({
+                attributes: [[Sequelize.fn('COUNT', '*'), 'cnt']],
+                ...generateFindArgs(sequelize, args),
+              }).then(result => result[0].get('cnt'));
             };
 
           return accAssoc;
@@ -61,7 +61,7 @@ export function resolvers(
       acc[modelName] = associates;
       return acc;
     }, {}),
-    ...additionalResolvers.type
+    ...additionalResolvers.type,
   };
 
   // Query
@@ -90,7 +90,7 @@ export function resolvers(
 
       return acc;
     }, {}),
-    ...additionalResolvers.query
+    ...additionalResolvers.query,
   };
 
   // Mutations
@@ -104,17 +104,17 @@ export function resolvers(
       const singularUF = upperFirst(singular);
 
       if (model.gqCreate !== false)
-        acc["create" + singularUF] = async (parent, args, context, info) => {
+        acc['create' + singularUF] = async (parent, args, context, info) => {
           const instance = await model.create(args.input);
           pubsub &&
-            pubsub.publish("create" + singularUF, {
-              ["create" + singularUF]: instance
+            pubsub.publish('create' + singularUF, {
+              ['create' + singularUF]: instance,
             });
           return instance;
         };
 
       if (model.gqUpdate !== false)
-        acc["update" + singularUF] = async (parent, args, context, info) => {
+        acc['update' + singularUF] = async (parent, args, context, info) => {
           const { input: updateValues } = args;
           const nwhere = generateFindArgs(sequelize, args);
           const resultDb = await model.update(updateValues, nwhere);
@@ -122,8 +122,8 @@ export function resolvers(
           const result = first(resultDb);
           if (result && pubsub) {
             instances.map(instance =>
-              pubsub.publish("update" + singularUF, {
-                ["update" + singularUF]: instance
+              pubsub.publish('update' + singularUF, {
+                ['update' + singularUF]: instance,
               })
             );
           }
@@ -131,14 +131,14 @@ export function resolvers(
         };
 
       if (model.gqDelete !== false)
-        acc["delete" + singularUF] = async (parent, args, context, info) => {
+        acc['delete' + singularUF] = async (parent, args, context, info) => {
           const nwhere = generateFindArgs(sequelize, args);
           const instances = await model.findAll(nwhere);
           const result = await model.destroy(nwhere);
           if (result && pubsub) {
             instances.map(instance =>
-              pubsub.publish("delete" + singularUF, {
-                ["delete" + singularUF]: instance
+              pubsub.publish('delete' + singularUF, {
+                ['delete' + singularUF]: instance,
               })
             );
           }
@@ -147,7 +147,7 @@ export function resolvers(
 
       return acc;
     }, {}),
-    ...additionalResolvers.mutation
+    ...additionalResolvers.mutation,
   };
 
   const matchOperatorSupport = {
@@ -160,7 +160,7 @@ export function resolvers(
     in: (value, match) => match.includes(value),
     notIn: (value, match) => !match.includes(value),
     like: (value, match) => value.indexOf(match) >= 0,
-    notLike: (value, match) => value.indexOf(match) === -1
+    notLike: (value, match) => value.indexOf(match) === -1,
   };
 
   function match(container, payload, { where }) {
@@ -196,45 +196,45 @@ export function resolvers(
         acc[`create${singularUF}`] = {
           subscribe: withFilter(
             () => {
-              return pubsub && pubsub.asyncIterator(["create" + singularUF]);
+              return pubsub && pubsub.asyncIterator(['create' + singularUF]);
             },
             (payload, variables) => {
-              return match("create" + singularUF, payload, variables);
+              return match('create' + singularUF, payload, variables);
             }
-          )
+          ),
         };
       }
       if (model.options.gqSubscriptionUpdate) {
-        acc["update" + singularUF] = {
+        acc['update' + singularUF] = {
           subscribe: withFilter(
             () => {
-              return pubsub && pubsub.asyncIterator(["update" + singularUF]);
+              return pubsub && pubsub.asyncIterator(['update' + singularUF]);
             },
             (payload, variables) => {
-              return match("update" + singularUF, payload, variables);
+              return match('update' + singularUF, payload, variables);
             }
-          )
+          ),
         };
       }
       if (model.options.gqSubscriptionDelete) {
-        acc["delete" + singularUF] = {
+        acc['delete' + singularUF] = {
           subscribe: withFilter(
             () => {
-              return pubsub && pubsub.asyncIterator(["delete" + singularUF]);
+              return pubsub && pubsub.asyncIterator(['delete' + singularUF]);
             },
             (payload, variables) => {
-              return match("delete" + singularUF, payload, variables);
+              return match('delete' + singularUF, payload, variables);
             }
-          )
+          ),
         };
       }
 
       return acc;
-    }, {})
+    }, {}),
   };
 
   if (Object.keys(subscriptions).length > 0) {
-    console.log("with resolver subscription");
+    console.log('with resolver subscription');
     resolvers.Subscription = subscriptions;
   }
 
@@ -255,7 +255,7 @@ function generateFindArgs(sequelize, args) {
     return Sequelize.Op[key] || key;
   }
   function convertKeyToOperator(values) {
-    if (!Array.isArray(values) && typeof values === "object") {
+    if (!Array.isArray(values) && typeof values === 'object') {
       return Object.keys(values).reduce((result, key) => {
         result[keyToOp(key)] = convertKeyToOperator(values[key]);
         return result;
@@ -271,6 +271,6 @@ function generateFindArgs(sequelize, args) {
     limit,
     offset,
     group,
-    where
+    where,
   };
 }

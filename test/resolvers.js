@@ -1,21 +1,21 @@
-import { expect } from "chai";
-import { createTestClient } from "apollo-server-testing";
-const { ApolloServer, gql } = require("apollo-server");
-import { generateFakes } from "./fakes";
-import pick from "lodash.pick";
-import prettier from "prettier";
+import { expect } from 'chai';
+import { createTestClient } from 'apollo-server-testing';
+const { ApolloServer, gql } = require('apollo-server');
+import { generateFakes } from './fakes';
+import pick from 'lodash.pick';
+import prettier from 'prettier';
 
-import db from "./models";
-import { resolvers } from "../src/resolvers";
-import { schema } from "../src/schemas";
+import db from './models';
+import { resolvers } from '../src/resolvers';
+import { schema } from '../src/schemas';
 
-const formatSchema = schema => prettier.format(schema, { parser: "graphql" });
+const formatSchema = schema => prettier.format(schema, { parser: 'graphql' });
 const converToStr = obj =>
   JSON.parse(JSON.stringify(obj), (k, value) =>
-    typeof value === "number" ? String(value) : value
+    typeof value === 'number' ? String(value) : value
   );
 
-describe("Resolvers", function() {
+describe('Resolvers', function() {
   this.timeout(0);
 
   let server = null;
@@ -28,25 +28,25 @@ describe("Resolvers", function() {
     const typesAndQuerys = schema(db.sequelize);
     server = new ApolloServer({
       typeDefs: typesAndQuerys,
-      resolvers: resolvers(db.sequelize)
+      resolvers: resolvers(db.sequelize),
     });
     const { query } = createTestClient(server);
     queryClient = query;
   });
 
-  describe("simple model", function() {
-    describe("Query", function() {
-      it("should simple query", async function() {
-        const fields = ["id", "name", "since", "revenue"];
+  describe('simple model', function() {
+    describe('Query', function() {
+      it('should simple query', async function() {
+        const fields = ['id', 'name', 'since', 'revenue'];
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
               customer(where: {id: { eq: $id }}) {
-                ${fields.join("\n")}
+                ${fields.join('\n')}
               }
             }
           `,
-          variables: { id: 1 }
+          variables: { id: 1 },
         });
         const dbResult = await db.sequelize.models.customer.findByPk(1);
         const expectedGqResult = converToStr(gqResult.data.customer);
@@ -54,10 +54,10 @@ describe("Resolvers", function() {
 
         expect(expectedDbResult).to.be.eql(expectedGqResult);
       });
-      it("should simple query with association", async function() {
+      it('should simple query with association', async function() {
         const CUSTOMER_ID = 1;
 
-        const fields = ["id", "name", "since", "revenue"];
+        const fields = ['id', 'name', 'since', 'revenue'];
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
@@ -73,7 +73,7 @@ describe("Resolvers", function() {
               }
             }
           `,
-          variables: { id: CUSTOMER_ID }
+          variables: { id: CUSTOMER_ID },
         });
 
         const dbCustomerResult = await db.sequelize.models.customer.findByPk(
@@ -84,7 +84,7 @@ describe("Resolvers", function() {
         );
         const dbOrderResult = await db.sequelize.models.order.findAll({
           where: { customerId: parseInt(expectedDbCustomerResult.id) },
-          raw: true
+          raw: true,
         });
 
         const expectedDbOrderResult = converToStr(
@@ -96,10 +96,10 @@ describe("Resolvers", function() {
 
         expect(expectedDbCustomerResult).to.be.eql(expectedGqResult);
       });
-      it("should simple query with count of association", async function() {
+      it('should simple query with count of association', async function() {
         const CUSTOMER_ID = 1;
 
-        const fields = ["id", "name", "since", "revenue"];
+        const fields = ['id', 'name', 'since', 'revenue'];
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
@@ -112,7 +112,7 @@ describe("Resolvers", function() {
               }
             }
           `,
-          variables: { id: CUSTOMER_ID }
+          variables: { id: CUSTOMER_ID },
         });
         const expectedGqResult = gqResult.data.customer;
 
@@ -126,7 +126,7 @@ describe("Resolvers", function() {
         );
         const dbOrderCountResult = await db.sequelize.models.order.count({
           where: { customerId: parseInt(expectedDbCustomerResult.id) },
-          raw: true
+          raw: true,
         });
         expectedDbCustomerResult.id = String(expectedDbCustomerResult.id);
         expectedDbCustomerResult.ordersCount = dbOrderCountResult;
@@ -134,10 +134,10 @@ describe("Resolvers", function() {
         // expect
         expect(expectedDbCustomerResult).to.be.eql(expectedGqResult);
       });
-      it("should query with count of association", async function() {
+      it('should query with count of association', async function() {
         const CUSTOMER_ID = 1;
 
-        const fields = ["id", "name", "since", "revenue"];
+        const fields = ['id', 'name', 'since', 'revenue'];
         const gqResult = await queryClient({
           query: gql`
             query firstcustomer($id: ID) {
@@ -150,7 +150,7 @@ describe("Resolvers", function() {
               }
             }
           `,
-          variables: { id: CUSTOMER_ID }
+          variables: { id: CUSTOMER_ID },
         });
 
         const expectedGqResult = gqResult.data.customer;
@@ -166,9 +166,9 @@ describe("Resolvers", function() {
         const dbOrderCountResult = await db.sequelize.models.order.count({
           where: {
             customerId: parseInt(expectedDbCustomerResult.id),
-            id: { [db.Sequelize.Op.gte]: 10 }
+            id: { [db.Sequelize.Op.gte]: 10 },
           },
-          raw: true
+          raw: true,
         });
         expectedDbCustomerResult.id = String(expectedDbCustomerResult.id);
         expectedDbCustomerResult.ordersCount = dbOrderCountResult;
@@ -178,9 +178,9 @@ describe("Resolvers", function() {
       });
     });
 
-    describe("Mutation", function() {
+    describe('Mutation', function() {
       let createdProductId = null;
-      it("should create a product", async function() {
+      it('should create a product', async function() {
         const gqResult = await queryClient({
           query: gql`
             mutation CreateProduct($product: _inputCreateProduct) {
@@ -193,10 +193,10 @@ describe("Resolvers", function() {
           `,
           variables: {
             product: {
-              description: "Hello product you are awesome!",
-              price: 198.88
-            }
-          }
+              description: 'Hello product you are awesome!',
+              price: 198.88,
+            },
+          },
         });
 
         const dbResult = await db.sequelize.models.product.findByPk(
@@ -208,16 +208,16 @@ describe("Resolvers", function() {
         const expectedGqResult = converToStr(gqResult.data.product);
 
         const expectedDbResult = converToStr(
-          pick(dbResult.toJSON(), ["id", "description", "price"])
+          pick(dbResult.toJSON(), ['id', 'description', 'price'])
         );
         expect(expectedDbResult).to.not.be.null;
         expect(expectedGqResult).to.not.be.null;
         expect(expectedDbResult).to.be.eql(expectedGqResult);
       });
 
-      it("should edit a product", async function() {
+      it('should edit a product', async function() {
         const newPrice = parseFloat((Math.random() * 100).toFixed(2));
-        const newDescription = "xpto 123";
+        const newDescription = 'xpto 123';
 
         const gqResult = await queryClient({
           query: gql`
@@ -232,17 +232,17 @@ describe("Resolvers", function() {
             id: 10,
             product: {
               description: newDescription,
-              price: newPrice
-            }
-          }
+              price: newPrice,
+            },
+          },
         });
 
         const expectedGqResult = gqResult.data.product;
         const dbResult = await db.sequelize.models.product.findByPk(10);
         const expectedDbResult = pick(dbResult.toJSON(), [
-          "id",
-          "description",
-          "price"
+          'id',
+          'description',
+          'price',
         ]);
 
         expect(expectedDbResult).to.not.be.null;
@@ -252,7 +252,7 @@ describe("Resolvers", function() {
         expect(newDescription).to.be.eql(expectedDbResult.description);
       });
 
-      it("should delete a product", async function() {
+      it('should delete a product', async function() {
         const dbCheckExistResult = await db.sequelize.models.product.findByPk(
           createdProductId
         );
@@ -264,8 +264,8 @@ describe("Resolvers", function() {
             }
           `,
           variables: {
-            id: createdProductId
-          }
+            id: createdProductId,
+          },
         });
 
         const quantityDeletedProduts = deleteProduct.data.product;
@@ -281,7 +281,7 @@ describe("Resolvers", function() {
 
       let productId,
         orderId = null;
-      it("should create a relation product order", async function() {
+      it('should create a relation product order', async function() {
         const gqGreateProductAndOrderResult = await queryClient({
           query: gql`
             mutation CreateProduct(
@@ -301,13 +301,13 @@ describe("Resolvers", function() {
           `,
           variables: {
             product: {
-              description: "My happy product",
-              price: 298.88
+              description: 'My happy product',
+              price: 298.88,
             },
             order: {
-              description: "Order the things what I need"
-            }
-          }
+              description: 'Order the things what I need',
+            },
+          },
         });
 
         const gqCreateProductOrderResult = await queryClient({
@@ -324,9 +324,9 @@ describe("Resolvers", function() {
           variables: {
             orderproduct: {
               orderId: gqGreateProductAndOrderResult.data.order.id,
-              productId: gqGreateProductAndOrderResult.data.product.id
-            }
-          }
+              productId: gqGreateProductAndOrderResult.data.product.id,
+            },
+          },
         });
         productId = gqGreateProductAndOrderResult.data.product.id;
         orderId = gqGreateProductAndOrderResult.data.order.id;
@@ -353,9 +353,9 @@ describe("Resolvers", function() {
           `,
           variables: {
             id: {
-              eq: gqGreateProductAndOrderResult.data.order.id
-            }
-          }
+              eq: gqGreateProductAndOrderResult.data.order.id,
+            },
+          },
         });
         expect(gqOrderResult.data.order.itemsCount).to.be.equal(1);
         expect(gqOrderResult.data.order.id).to.be.equal(
@@ -363,7 +363,7 @@ describe("Resolvers", function() {
         );
       });
 
-      it("should delete a relation product order", async function() {
+      it('should delete a relation product order', async function() {
         const gqDeleteOrderProduct = await queryClient({
           query: gql`
             mutation OrderProduct($productId: ID, $orderId: ID) {
@@ -377,8 +377,8 @@ describe("Resolvers", function() {
           `,
           variables: {
             productId: String(productId),
-            orderId: String(orderId)
-          }
+            orderId: String(orderId),
+          },
         });
         expect(gqDeleteOrderProduct.data.deleteOrderproduct).to.be.equal(1);
       });

@@ -10,7 +10,7 @@ export const operatorsAny = {
   in: [],
   notIn: [],
   between: [],
-  notBetween: []
+  notBetween: [],
 };
 export const operatorsString = {
   like: null,
@@ -29,5 +29,5 @@ export const operatorsString = {
   contained: [],
   adjacent: [],
   strictLeft: [],
-  strictRight: []
+  strictRight: [],
 };

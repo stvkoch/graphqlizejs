@@ -1,7 +1,7 @@
-import upperFirst from "lodash.upperfirst";
-import Sequelize from "sequelize";
-import { mapTypes } from "./types";
-import { operatorsAny, operatorsString } from "./operators";
+import upperFirst from 'lodash.upperfirst';
+import Sequelize from 'sequelize';
+import { mapTypes } from './types';
+import { operatorsAny, operatorsString } from './operators';
 
 function assertNotUndefined(obj, msg) {
   if (obj === undefined || obj === null)
@@ -20,7 +20,7 @@ function assertSequelizeModel(model, msg) {
 /*
 Create your dataTypes from your models
 */
-export function schema(sequelize, extend = "") {
+export function schema(sequelize, extend = '') {
   assertNotUndefined(
     sequelize,
     `schema function should receive a sequelize instance, received ${typeof sequelize}`
@@ -35,8 +35,8 @@ export function schema(sequelize, extend = "") {
     generateQueries(sequelize),
     generateMutations(sequelize),
     generateSubscriptions(sequelize),
-    extend
-  ].join("\n");
+    extend,
+  ].join('\n');
 }
 export function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -49,10 +49,10 @@ function generateInputOperators(sequelize) {
     Object.values(model.rawAttributes).map(attribute => {
       let type = attribute.type.key;
       if (attribute.primaryKey) {
-        type = "ID";
+        type = 'ID';
       }
       if (acc[type]) return acc;
-      const argType = upperFirst(mapTypes(type, "absolute"));
+      const argType = upperFirst(mapTypes(type, 'absolute'));
 
       acc[argType] = argType;
     });
@@ -66,21 +66,21 @@ function generateInputOperators(sequelize) {
                 if (operatorsAny[op] === null) return `${op}: ${gqType}`;
                 return `${op}: [${gqType}]`;
               })
-              .join("\n")}
+              .join('\n')}
               ${
-                gqType === "String"
+                gqType === 'String'
                   ? Object.keys(operatorsString)
                       .map(op => {
                         if (operatorsString[op] === null)
                           return `${op}: ${gqType}`;
                         return `${op}: [${gqType}]`;
                       })
-                      .join("\n")
-                  : ""
+                      .join('\n')
+                  : ''
               }
         }`;
     })
-    .join("\n");
+    .join('\n');
 }
 
 function generateInputWhere(sequelize) {
@@ -94,7 +94,7 @@ function generateInputWhere(sequelize) {
 
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
-        type = "ID";
+        type = 'ID';
       }
 
       const inputOperatorName = `_input${type}Operator`;
@@ -143,10 +143,10 @@ function generateInputCreate(sequelize) {
           [attribute.references.key]
         ].primaryKey
       ) {
-        type = "ID";
+        type = 'ID';
       }
       if (attribute.primaryKey) {
-        type = "ID";
+        type = 'ID';
       }
       let allowNull = attribute.allowNull;
       if (
@@ -156,7 +156,7 @@ function generateInputCreate(sequelize) {
       )
         allowNull = true;
 
-      type = `${type}${allowNull ? "" : "!"}`;
+      type = `${type}${allowNull ? '' : '!'}`;
       acc[modelName][attribute.field] = type;
     });
 
@@ -186,7 +186,7 @@ function generateInputUpdate(sequelize) {
       let type = upperFirst(mapTypes(attribute.type.key));
 
       if (attribute.primaryKey) {
-        type = "ID";
+        type = 'ID';
       }
       let allowNull = attribute.allowNull;
       if (
@@ -196,7 +196,7 @@ function generateInputUpdate(sequelize) {
       )
         allowNull = true;
 
-      type = `${type}${allowNull ? "" : "!"}`;
+      type = `${type}${allowNull ? '' : '!'}`;
       acc[modelName][attribute.field] = type;
     });
 
@@ -221,10 +221,10 @@ function generateTypeModels(sequelize) {
     Object.values(model.rawAttributes).map(attribute => {
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
-        type = "ID";
+        type = 'ID';
       }
       let allowNull = attribute.allowNull;
-      type = `${type}${allowNull ? "" : "!"}`;
+      type = `${type}${allowNull ? '' : '!'}`;
       acc[modelName][attribute.field] = type;
     });
 
@@ -253,15 +253,15 @@ function generateTypeModels(sequelize) {
       acc[modelName][name] = {
         name,
         type,
-        associationType
+        associationType,
       };
 
       if (collection) {
         name = `_${name}Count`;
         acc[modelName][name] = {
           name,
-          type: "Int!",
-          associationType
+          type: 'Int!',
+          associationType,
         };
       }
     });
@@ -272,7 +272,7 @@ function generateTypeModels(sequelize) {
       return `type ${modelName} {
       ${Object.keys(modelsTypes[modelName])
         .map(fieldName => `${fieldName}:${modelsTypes[modelName][fieldName]}`)
-        .join("\n")}
+        .join('\n')}
         ${Object.values(modelsTypesAssociations[modelName])
           .map(
             association =>
@@ -281,10 +281,10 @@ function generateTypeModels(sequelize) {
               }):
                 ${association.type}`
           )
-          .join("\n")}
+          .join('\n')}
     }`;
     })
-    .join("\n");
+    .join('\n');
 }
 
 function generateQueries(sequelize) {
@@ -297,17 +297,17 @@ function generateQueries(sequelize) {
     acc[singularModelName] = {
       name: singularModelName,
       input: name,
-      type: name
+      type: name,
     };
     acc[pluralModelName] = {
       name: pluralModelName,
       input: name,
-      type: `[${name}!]!`
+      type: `[${name}!]!`,
     };
     acc[`_${pluralModelName}Count`] = {
       name: `_${pluralModelName}Count`,
       input: name,
-      type: `Int!`
+      type: `Int!`,
     };
 
     return acc;
@@ -318,7 +318,7 @@ function generateQueries(sequelize) {
       .map(query => {
         return `${query.name}(where: _inputWhere${query.input}): ${query.type}`;
       })
-      .join("\n")}
+      .join('\n')}
   }`;
 }
 
@@ -331,19 +331,19 @@ function generateMutations(sequelize) {
     acc[operation] = {
       name: operation,
       arguments: `input: _inputCreate${name}`,
-      type: `${name}!`
+      type: `${name}!`,
     };
     operation = `update${name}`;
     acc[operation] = {
       name: operation,
       arguments: `where: _inputWhere${name}, input: _inputUpdate${name}`,
-      type: `Int!`
+      type: `Int!`,
     };
     operation = `delete${name}`;
     acc[operation] = {
       name: operation,
       arguments: `where: _inputWhere${name}`,
-      type: `Int!`
+      type: `Int!`,
     };
 
     return acc;
@@ -354,7 +354,7 @@ function generateMutations(sequelize) {
       .map(mutation => {
         return `${mutation.name}(${mutation.arguments}): ${mutation.type}`;
       })
-      .join("\n")}
+      .join('\n')}
   }`;
 }
 // gqSubscriptionCreate: true,
@@ -370,27 +370,27 @@ function generateSubscriptions(sequelize) {
       acc[operation] = {
         name: operation,
         arguments: `where: _inputWhere${name}`,
-        type: `${name}`
+        type: `${name}`,
       };
     operation = `update${name}`;
     if (model.options.gqSubscriptionUpdate)
       acc[operation] = {
         name: operation,
         arguments: `where: _inputWhere${name}`,
-        type: `${name}`
+        type: `${name}`,
       };
     operation = `delete${name}`;
     if (model.options.gqSubscriptionDelete)
       acc[operation] = {
         name: operation,
         arguments: `where: _inputWhere${name}`,
-        type: `${name}`
+        type: `${name}`,
       };
 
     return acc;
   }, {});
 
-  if (!Object.keys(modelsSubscriptions).length > 0) return "";
+  if (!Object.keys(modelsSubscriptions).length > 0) return '';
 
   return `type Subscription {
     ${Object.values(modelsSubscriptions)
@@ -399,6 +399,6 @@ function generateSubscriptions(sequelize) {
           subscription.type
         }`;
       })
-      .join("\n")}
+      .join('\n')}
   }`;
 }

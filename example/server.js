@@ -1,16 +1,16 @@
-import express from "express";
-import { ApolloServer, gql, PubSub } from "apollo-server-express";
-import fs from "fs";
-import https from "https";
-import http from "http";
-import hasha from "hasha";
-import prettier from "prettier";
-import { schema, resolvers } from "../";
-import { generateFakes } from "./fakes";
-import db from "./models";
+import express from 'express';
+import { ApolloServer, gql, PubSub } from 'apollo-server-express';
+import fs from 'fs';
+import https from 'https';
+import http from 'http';
+import hasha from 'hasha';
+import prettier from 'prettier';
+import { schema, resolvers } from '../';
+import { generateFakes } from './fakes';
+import db from './models';
 
 const pubsub = new PubSub();
-const extend = "";
+const extend = '';
 // `
 // extend type Mutation{
 //   singleUpload(file: Upload!): File!
@@ -18,7 +18,7 @@ const extend = "";
 //`;
 
 const schemaGenerated = prettier.format(schema(db.sequelize, extend), {
-  parser: "graphql"
+  parser: 'graphql',
 });
 
 const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
@@ -45,33 +45,33 @@ const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
     //   });
     //   return row;
     // }
-  }
+  },
 }));
 
 const configurations = {
   production: {
     ssl: false,
     port: process.env.PORT || 443,
-    hostname: "graphqlize.herokuapp.com"
+    hostname: 'graphqlize.herokuapp.com',
   },
   development: {
     ssl: false,
     port: process.env.PORT || 4000,
-    hostname: "localhost"
-  }
+    hostname: 'localhost',
+  },
 };
 
-const environment = process.env.NODE_ENV || "development";
+const environment = process.env.NODE_ENV || 'development';
 const config = configurations[environment];
 
 const apollo = new ApolloServer({
   typeDefs: gql(schemaGenerated),
-  resolvers: resolversGenerated
+  resolvers: resolversGenerated,
 });
 
 const app = express();
 apollo.applyMiddleware({ app });
-app.get("/", (_, res) =>
+app.get('/', (_, res) =>
   res.send(
     `<div><a href="/graphql">Graphqli</a></div><pre>${schemaGenerated}</pre>`
   )
@@ -84,7 +84,7 @@ if (config.ssl) {
   server = https.createServer(
     {
       key: fs.readFileSync(`./ssl/${environment}/server.key`),
-      cert: fs.readFileSync(`./ssl/${environment}/server.crt`)
+      cert: fs.readFileSync(`./ssl/${environment}/server.crt`),
     },
     app
   );
@@ -100,8 +100,8 @@ db.sequelize.drop().then(() => {
     generateFakes(db);
     server.listen({ port: config.port }, () =>
       console.log(
-        "🚀 Server ready at",
-        `http${config.ssl ? "s" : ""}://${config.hostname}:${config.port}${
+        '🚀 Server ready at',
+        `http${config.ssl ? 's' : ''}://${config.hostname}:${config.port}${
           apollo.graphqlPath
         }`
       )
