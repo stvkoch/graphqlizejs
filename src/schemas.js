@@ -188,15 +188,15 @@ function generateInputUpdate(sequelize) {
       if (attribute.primaryKey) {
         type = 'ID';
       }
-      let allowNull = attribute.allowNull;
-      if (
-        model.options.timestamps &&
-        (model._timestampAttributes.createdAt === attribute.field ||
-          model._timestampAttributes.updatedAt === attribute.field)
-      )
-        allowNull = true;
+      // let allowNull = attribute.allowNull;
+      // if (
+      //   model.options.timestamps &&
+      //   (model._timestampAttributes.createdAt === attribute.field ||
+      //     model._timestampAttributes.updatedAt === attribute.field)
+      // )
+      //   allowNull = true;
 
-      type = `${type}${allowNull ? '' : '!'}`;
+      // type = `${type}${allowNull ? '' : '!'}`;
       acc[modelName][attribute.field] = type;
     });
 

@@ -66,16 +66,20 @@ export function resolvers(
             }
           );
           if (association.isMultiAssociation)
-            accAssoc[
-              `_${associationFieldName}Count`
-            ] = association.target.options.gqMiddleware.query(
-              (parent, args, context, info) => {
-                return parent['get' + associationFieldNameType]({
-                  attributes: [[Sequelize.fn('COUNT', '*'), 'cnt']],
-                  ...generateFindArgs(sequelize, args),
-                }).then(result => result[0].get('cnt'));
-              }
-            );
+            accAssoc[`_${associationFieldName}Count`] = (
+              //association.target.options.gqMiddleware.query(
+              parent,
+              args,
+              context,
+              info
+            ) => {
+              console.log('\n\n', 'get' + associationFieldNameType, '\n\n');
+              return parent['get' + associationFieldNameType]({
+                attributes: [[sequelize.fn('count'), 'cnt']],
+                ...generateFindArgs(sequelize, args),
+              }).then(result => result[0].get('cnt'));
+            };
+          //);
 
           return accAssoc;
         },

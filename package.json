@@ -1,7 +1,7 @@
 {
   "name": "graphqlizejs",
   "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "main": "./lib/index.js",
   "keywords": [
     "sequelizejs",
@@ -29,7 +29,7 @@
     "lodash.concat": "^4.5.0",
     "lodash.first": "^3.0.0",
     "lodash.upperfirst": "^4.3.1",
-    "sequelize": ">=5.3.0"
+    "sequelize": "^5.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
