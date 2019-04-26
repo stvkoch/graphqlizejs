@@ -1,7 +1,7 @@
 import upperFirst from 'lodash.upperfirst';
 import first from 'lodash.first';
 import Sequelize from 'sequelize';
-import { withFilter } from 'apollo-server';
+import { withFilter, PubSub } from 'apollo-server';
 
 function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -248,13 +248,14 @@ export function resolvers(
   };
 
   if (Object.keys(subscriptions).length > 0) {
+    if (!pubsub) pubsub = new PubSub();
     resolvers.Subscription = subscriptions;
   }
 
   return resolvers;
 }
 
-const matchOperatorSupport = {
+export const matchOperatorSupport = {
   eq: (value, match) => value === match,
   ne: (value, match) => value !== match,
   gte: (value, match) => value >= match,
