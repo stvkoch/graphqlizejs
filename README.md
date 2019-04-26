@@ -24,12 +24,11 @@ You define your models and everything it's available!
   - update mutation
   - delete mutation
 - Subscriptions
+
   - create
   - update
   - delete
-  
-  
-  
+
 ## Install
 
 ```
@@ -392,3 +391,64 @@ mutation {
   )
 }
 ```
+
+## Subscriptions
+
+## Middlewares Resolvers
+
+Middleware is the way to add some control over the model resolvers. You can add middlewares receiving the next resolver and returning the function with same assignature found in apollo server resolvers (root/parent, args, context, info) arguments.
+
+Defining middleware:
+
+```
+function requireUser(nextResolver) {
+  return (parent, args, context, info) => {
+    if (!context.user)
+      throw new AuthenticationError('Required valid authentication.');
+
+    // you always should call the next resolver if you want keep flow the resolvers.
+    return nextResolver(parent, args, context, info);
+  }
+}
+```
+
+Using middleware in your models:
+
+```
+import flow from 'lodash.flow';
+import {requireUser, onlyOwnData} from '../models/middlewares';
+
+// models/service.js file
+export default (sequelize, DataTypes) => {
+  const Service = sequelize.define(
+    "service",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      name: DataTypes.STRING,
+      price: DataTypes.DECIMAL(10, 2)
+    },
+    {
+      freezeTableName: true,
+      gqMiddleware: {
+        query: requireUser,
+        create: flow([requireUser, onlyOwnData]),
+        update: flow([requireUser, onlyOwnData]),
+        destroy: flow([requireUser, onlyOwnData])
+      }
+    }
+  );
+  Service.associate = models => {
+    Service.belongsTo(models.category);
+  };
+  return Service;
+};
+
+```
+
+## Complete example
+
+https://github.com/stvkoch/example-graphqlizejs

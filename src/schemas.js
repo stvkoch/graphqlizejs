@@ -3,25 +3,16 @@ import Sequelize from 'sequelize';
 import { mapTypes } from './types';
 import { operatorsAny, operatorsString } from './operators';
 
-function assertNotUndefined(obj, msg) {
+function assertNotEmpty(obj, msg) {
   if (obj === undefined || obj === null)
-    throw Error(msg || `Object should be not a undefined or null`);
-}
-function assertSequelizeModel(model, msg) {
-  if (model === undefined || model === null)
-    throw Error(
-      msg ||
-        `Model should be instance of Sequelize Model, instead of ${
-          model.constructor.name
-        }`
-    );
+    throw Error(msg || 'Object should be not a undefined or null');
 }
 
 /*
 Create your dataTypes from your models
 */
 export function schema(sequelize, extend = '') {
-  assertNotUndefined(
+  assertNotEmpty(
     sequelize,
     `schema function should receive a sequelize instance, received ${typeof sequelize}`
   );
@@ -45,19 +36,26 @@ export function getModelName(model) {
 function generateInputOperators(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsTypes = models.reduce((acc, model) => {
-    assertSequelizeModel(model);
-    Object.values(model.rawAttributes).map(attribute => {
+    assertNotEmpty(model);
+    if (model.options.gqIgnore) return acc;
+
+    Object.values(model.rawAttributes).forEach(attribute => {
+      if (attribute.gqIgnore) return acc;
+
       let type = attribute.type.key;
       if (attribute.primaryKey) {
         type = 'ID';
       }
-      if (acc[type]) return acc;
+      if (acc[type]) return;
+
       const argType = upperFirst(mapTypes(type, 'absolute'));
 
       acc[argType] = argType;
     });
+
     return acc;
   }, {});
+
   return Object.values(modelsTypes)
     .map(gqType => {
       return `input _input${gqType}Operator {
@@ -86,11 +84,14 @@ function generateInputOperators(sequelize) {
 function generateInputWhere(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).map(attribute => {
-      if (attribute.type instanceof Sequelize.VIRTUAL) return acc;
+    Object.values(model.rawAttributes).forEach(attribute => {
+      if (attribute.gqIgnore) return;
+      if (attribute.type instanceof Sequelize.VIRTUAL) return;
 
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
@@ -116,20 +117,24 @@ function generateInputWhere(sequelize) {
   }`
   );
 }
+
 // gqInputCreateWithPrimaryKeys
 function generateInputCreate(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).map(attribute => {
+    Object.values(model.rawAttributes).forEach(attribute => {
+      if (attribute.gqIgnore) return;
       if (
         model.options.gqInputCreateWithPrimaryKeys !== true &&
         attribute.primaryKey &&
         !(attribute.references && attribute.references.model)
       ) {
-        return acc;
+        return;
       }
 
       let type = upperFirst(mapTypes(attribute.type.key));
@@ -171,32 +176,26 @@ function generateInputCreate(sequelize) {
   }`
   );
 }
+
 //gqInputUpdateWithPrimaryKeys
 function generateInputUpdate(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).map(attribute => {
+    Object.values(model.rawAttributes).forEach(attribute => {
+      if (attribute.gqIgnore) return;
+
       if (attribute.primaryKey && !model.options.gqInputUpdateWithPrimaryKeys) {
-        return acc;
+        return;
       }
-
       let type = upperFirst(mapTypes(attribute.type.key));
-
       if (attribute.primaryKey) {
         type = 'ID';
       }
-      // let allowNull = attribute.allowNull;
-      // if (
-      //   model.options.timestamps &&
-      //   (model._timestampAttributes.createdAt === attribute.field ||
-      //     model._timestampAttributes.updatedAt === attribute.field)
-      // )
-      //   allowNull = true;
-
-      // type = `${type}${allowNull ? '' : '!'}`;
       acc[modelName][attribute.field] = type;
     });
 
@@ -214,11 +213,16 @@ function generateInputUpdate(sequelize) {
 
 function generateTypeModels(sequelize) {
   const models = Object.values(sequelize.models);
+
   const modelsTypes = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).map(attribute => {
+    Object.values(model.rawAttributes).forEach(attribute => {
+      if (attribute.gqIgnore === true) return;
+
       let type = upperFirst(mapTypes(attribute.type.key));
       if (attribute.primaryKey) {
         type = 'ID';
@@ -230,10 +234,16 @@ function generateTypeModels(sequelize) {
 
     return acc;
   }, {});
+
   const modelsTypesAssociations = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
-    Object.values(model.associations).map(association => {
+
+    Object.values(model.associations).forEach(association => {
+      if (association.target.options.gqIgnore) return;
+
       const associationType = upperFirst(
         association.target.options.name.singular ||
           association.target.options.name
@@ -267,6 +277,7 @@ function generateTypeModels(sequelize) {
     });
     return acc;
   }, {});
+
   return Object.keys(modelsTypes)
     .map(modelName => {
       return `type ${modelName} {
@@ -290,6 +301,8 @@ function generateTypeModels(sequelize) {
 function generateQueries(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsQueries = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     let name = getModelName(model);
     const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
     const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
@@ -325,6 +338,8 @@ function generateQueries(sequelize) {
 function generateMutations(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsMutations = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const name = upperFirst(getModelName(model));
 
     let operation = `create${name}`;
@@ -363,6 +378,8 @@ function generateMutations(sequelize) {
 function generateSubscriptions(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsSubscriptions = models.reduce((acc, model) => {
+    if (model.options.gqIgnore) return acc;
+
     const name = upperFirst(getModelName(model));
 
     let operation = `create${name}`;

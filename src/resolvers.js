@@ -10,8 +10,11 @@ function defaultMiddleware(f) {
   return f;
 }
 function setDefaultMiddlewares(sequelize) {
-  Object.keys(sequelize.models).map(key => {
+  Object.keys(sequelize.models).forEach(key => {
     const model = sequelize.models[key];
+
+    if (model.options.gqIgnore) return;
+
     if (!model.options.gqMiddleware) model.options.gqMiddleware = {};
     if (!model.options.gqMiddleware.query)
       model.options.gqMiddleware.query = defaultMiddleware;
@@ -45,6 +48,8 @@ export function resolvers(
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
       const model = sequelize.models[modelName];
       if (!model) return acc;
+      if (model.options.gqIgnore) return acc;
+
       modelName = getModelName(model);
       const associations = model.associations || {};
 
@@ -52,6 +57,8 @@ export function resolvers(
       const associates = Object.keys(associations).reduce(
         (accAssoc, associationName) => {
           const association = associations[associationName];
+          if (association.target.options.gqIgnore) return accAssoc;
+
           const associationFieldName =
             association.as || association.options.name;
           const associationFieldNameType = upperFirst(associationFieldName);
@@ -92,6 +99,8 @@ export function resolvers(
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
       const model = sequelize.models[modelName];
       if (!model) return acc;
+      if (model.options.gqIgnore) return acc;
+
       modelName = getModelName(model);
       if (model.gqSearch === false) return;
 
@@ -126,6 +135,8 @@ export function resolvers(
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
       const model = sequelize.models[modelName];
       if (!model) return acc;
+      if (model.options.gqIgnore) return acc;
+
       modelName = getModelName(model);
 
       const singular = modelName;
@@ -189,6 +200,7 @@ export function resolvers(
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
       const model = sequelize.models[modelName];
       if (!model) return acc;
+      if (model.options.gqIgnore) return acc;
 
       modelName = getModelName(model);
       const singular = modelName;
