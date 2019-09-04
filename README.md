@@ -392,18 +392,6 @@ mutation {
 }
 ```
 
-## Subscriptions
-
-Graphqlizejs will create for each mutation request one subscription method. But for this you should enable the subscription option in your models.
-
-```
-gqSubscriptionCreate: true,
-gqSubscriptionUpdate: true,
-gqSubscriptionDelete: true,
-```
-
-Then, Graphqlizejs will generate subscritions operations the model and will trigger them each time that someone call the correlated mutation operation.
-
 ## Middlewares Resolvers
 
 Middleware is the way to add some control over the model resolvers. You can add middlewares receiving the next resolver and returning the function with same assignature found in apollo server resolvers (root/parent, args, context, info) arguments.
