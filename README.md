@@ -106,7 +106,7 @@ schema> https://graphqlize.herokuapp.com/
 Let's imagine that we have follow models (example folder):
 
 ```
-// models/catagory.js file
+// models/category.js file
 export default (sequelize, DataTypes) => {
   const Category = sequelize.define(
     "category",
