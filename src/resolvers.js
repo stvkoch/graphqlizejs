@@ -18,6 +18,8 @@ function setDefaultMiddlewares(sequelize) {
     if (!model.options.gqMiddleware) model.options.gqMiddleware = {};
     if (!model.options.gqMiddleware.query)
       model.options.gqMiddleware.query = defaultMiddleware;
+    if (!model.options.gqMiddleware.queryCount)
+      model.options.gqMiddleware.queryCount = defaultMiddleware;
     if (!model.options.gqMiddleware.create)
       model.options.gqMiddleware.create = defaultMiddleware;
     if (!model.options.gqMiddleware.update)
@@ -75,7 +77,7 @@ export function resolvers(
           if (association.isMultiAssociation)
             accAssoc[
               `_${associationFieldName}Count`
-            ] = association.target.options.gqMiddleware.query(
+            ] = association.target.options.gqMiddleware.queryCount(
               (parent, args, context, info) => {
                 return parent['get' + associationFieldNameType]({
                   attributes: [[sequelize.fn('count'), 'cnt']],
@@ -113,7 +115,7 @@ export function resolvers(
         }
       );
 
-      acc[`_${plural}Count`] = model.options.gqMiddleware.query(
+      acc[`_${plural}Count`] = model.options.gqMiddleware.queryCount(
         (parent, args, context, info) => {
           return model.count(generateFindArgs(sequelize, args));
         }

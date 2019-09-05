@@ -433,6 +433,7 @@ export default (sequelize, DataTypes) => {
       freezeTableName: true,
       gqMiddleware: {
         query: requireUser,
+        queryCount: requireUser,
         create: flow([requireUser, onlyOwnData]),
         update: flow([requireUser, onlyOwnData]),
         destroy: flow([requireUser, onlyOwnData])
