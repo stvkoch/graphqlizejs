@@ -80,7 +80,7 @@ export function resolvers(
             ] = association.target.options.gqMiddleware.queryCount(
               (parent, args, context, info) => {
                 return parent['get' + associationFieldNameType]({
-                  attributes: [[sequelize.fn('count'), 'cnt']],
+                  attributes: [[sequelize.fn('count', '*'), 'cnt']],
                   ...generateFindArgs(sequelize, args),
                 }).then(result => result[0].get('cnt'));
               }
