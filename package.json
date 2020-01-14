@@ -3,6 +3,9 @@
   "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
   "version": "0.3.0",
   "main": "./lib/index.js",
+  "engines": {
+    "node": "10.x"
+  },
   "keywords": [
     "sequelizejs",
     "sequelize",
