@@ -352,13 +352,13 @@ function generateMutations(sequelize) {
     acc[operation] = {
       name: operation,
       arguments: `where: _inputWhere${name}, input: _inputUpdate${name}`,
-      type: `Int!`,
+      type: `[${name}]`,
     };
     operation = `delete${name}`;
     acc[operation] = {
       name: operation,
       arguments: `where: _inputWhere${name}`,
-      type: `Int!`,
+      type: `[${name}]`,
     };
 
     return acc;
