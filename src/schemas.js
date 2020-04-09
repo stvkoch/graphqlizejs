@@ -9,7 +9,7 @@ function assertNotEmpty(obj, msg) {
 }
 
 function getTypeFromAttribute(attribute){
-  attribute.type.key.split(' ')[0]; // TODO: use common approach
+  return attribute.type.key.split(' ')[0]; // TODO: use common approach
 }
 
 /*
