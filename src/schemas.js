@@ -8,6 +8,10 @@ function assertNotEmpty(obj, msg) {
     throw Error(msg || 'Object should be not a undefined or null');
 }
 
+function getTypeFromAttribute(attribute){
+  attribute.type.key.split(' ')[0]; // TODO: use common approach
+}
+
 /*
 Create your dataTypes from your models
 */
@@ -42,7 +46,7 @@ function generateInputOperators(sequelize) {
     Object.values(model.rawAttributes).forEach(attribute => {
       if (attribute.gqIgnore) return acc;
 
-      let type = attribute.type.key;
+      let type = getTypeFromAttribute(attribute)
       if (attribute.primaryKey) {
         type = 'ID';
       }
@@ -93,7 +97,7 @@ function generateInputWhere(sequelize) {
       if (attribute.gqIgnore) return;
       if (attribute.type instanceof Sequelize.VIRTUAL) return;
 
-      let type = upperFirst(mapTypes(attribute.type.key));
+      let type = upperFirst(mapTypes(getTypeFromAttribute(attribute)));
       if (attribute.primaryKey) {
         type = 'ID';
       }
@@ -137,7 +141,7 @@ function generateInputCreate(sequelize) {
         return;
       }
 
-      let type = upperFirst(mapTypes(attribute.type.key));
+      let type = upperFirst(mapTypes(getTypeFromAttribute(attribute)));
 
       if (
         attribute.references &&
@@ -192,7 +196,7 @@ function generateInputUpdate(sequelize) {
       if (attribute.primaryKey && !model.options.gqInputUpdateWithPrimaryKeys) {
         return;
       }
-      let type = upperFirst(mapTypes(attribute.type.key));
+      let type = upperFirst(mapTypes(getTypeFromAttribute(attribute)));
       if (attribute.primaryKey) {
         type = 'ID';
       }
@@ -223,7 +227,7 @@ function generateTypeModels(sequelize) {
     Object.values(model.rawAttributes).forEach(attribute => {
       if (attribute.gqIgnore === true) return;
 
-      let type = upperFirst(mapTypes(attribute.type.key));
+      let type = upperFirst(mapTypes(getTypeFromAttribute(attribute)));
       if (attribute.primaryKey) {
         type = 'ID';
       }
