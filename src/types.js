@@ -24,6 +24,7 @@ export const mapSequelizeToGraphql = {
   DECIMAL: 'Float',
   BOOLEAN: 'Boolean',
   VIRTUAL: 'String',
+  DEFAULT_TYPE: 'String',
 };
 
 const gqTypes = [
@@ -39,5 +40,5 @@ const gqTypes = [
 
 export function mapTypes(type, absolute = false) {
   if (absolute) return mapSequelizeToGraphql[type];
-  return mapSequelizeToGraphql[type] || type;
+  return mapSequelizeToGraphql[type] || mapSequelizeToGraphql.DEFAULT_TYPE;
 }

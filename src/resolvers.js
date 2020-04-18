@@ -103,9 +103,9 @@ export function resolvers(
       if (!model) return acc;
       if (model.options.gqIgnore) return acc;
       if (model.gqSearch === false) return acc;
-      
+
       modelName = getModelName(model);
-      
+
       const singular = Sequelize.Utils.singularize(modelName).toLowerCase();
       const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
