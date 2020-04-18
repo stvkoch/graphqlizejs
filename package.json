@@ -1,7 +1,7 @@
 {
   "name": "graphqlizejs",
   "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "main": "./lib/index.js",
   "keywords": [
     "sequelizejs",
@@ -26,6 +26,7 @@
     ]
   },
   "dependencies": {
+    "graphql-iso-date": "^3.6.1",
     "lodash.concat": "^4.5.0",
     "lodash.first": "^3.0.0",
     "lodash.upperfirst": "^4.3.1",

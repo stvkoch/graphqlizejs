@@ -18,6 +18,11 @@ export function schema(sequelize, extend = '') {
   );
 
   return [
+    `
+    scalar Date
+    scalar Time
+    scalar DateTime
+    `,
     generateInputOperators(sequelize),
     generateInputWhere(sequelize),
     generateInputCreate(sequelize),
@@ -287,9 +292,7 @@ function generateTypeModels(sequelize) {
         ${Object.values(modelsTypesAssociations[modelName])
           .map(
             association =>
-              `${association.name}(where: _inputWhere${
-                association.associationType
-              }):
+              `${association.name}(where: _inputWhere${association.associationType}):
                 ${association.type}`
           )
           .join('\n')}
@@ -412,9 +415,7 @@ function generateSubscriptions(sequelize) {
   return `type Subscription {
     ${Object.values(modelsSubscriptions)
       .map(subscription => {
-        return `${subscription.name}(${subscription.arguments}): ${
-          subscription.type
-        }`;
+        return `${subscription.name}(${subscription.arguments}): ${subscription.type}`;
       })
       .join('\n')}
   }`;

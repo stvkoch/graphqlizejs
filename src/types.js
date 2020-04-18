@@ -10,7 +10,7 @@ export const mapSequelizeToGraphql = {
   UUID: 'String',
   UUIDV1: 'String',
   UUIDV4: 'String',
-  DATE: 'String',
+  DATE: 'DateTime',
   TIME: 'String',
   INTEGER: 'Int',
   TINYINT: 'Int',
@@ -40,5 +40,5 @@ const gqTypes = [
 
 export function mapTypes(type, absolute = false) {
   if (absolute) return mapSequelizeToGraphql[type];
-  return mapSequelizeToGraphql[type] || mapSequelizeToGraphql.DEFAULT_TYPE;
+  return mapSequelizeToGraphql[type] || type;
 }

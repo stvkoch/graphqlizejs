@@ -2,6 +2,11 @@ import upperFirst from 'lodash.upperfirst';
 import first from 'lodash.first';
 import Sequelize from 'sequelize';
 import { withFilter, PubSub } from 'apollo-server';
+const {
+  GraphQLDate,
+  GraphQLDateTime,
+  GraphQLTime,
+} = require('graphql-iso-date');
 
 function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -36,6 +41,9 @@ export function resolvers(
   getAdditionalresolvers = _ => ({})
 ) {
   const additionalResolvers = {
+    Date: GraphQLDate,
+    Time: GraphQLTime,
+    DateTime: GraphQLDateTime,
     type: {},
     query: {},
     mutation: {},
