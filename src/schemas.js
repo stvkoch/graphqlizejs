@@ -170,6 +170,27 @@ function generateInputCreate(sequelize) {
       acc[modelName][attribute.field] = type;
     });
 
+    Object.values(model.associations).forEach(association => {
+      let name = association.as;
+
+      if (
+        !model.options.gqAssociationAssign ||
+        !model.options.gqAssociationAssign.includes(name)
+      )
+        return;
+
+      const associationType = upperFirst(
+        association.target.options.name.singular ||
+          association.target.options.name
+      );
+
+      let type = `_inputCreate${upperFirst(associationType)}`;
+      if (association.isMultiAssociation) {
+        type = `[_inputCreate${upperFirst(associationType)}]`;
+      }
+
+      acc[modelName][name] = type;
+    });
     return acc;
   }, {});
 

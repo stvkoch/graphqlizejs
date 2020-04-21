@@ -155,7 +155,17 @@ export function resolvers(
       if (model.gqCreate !== false)
         acc['create' + singularUF] = model.options.gqMiddleware.create(
           async (parent, args, context, info) => {
-            const instance = await model.create(args.input);
+            const associations = model.associations || {};
+            const include = [];
+            Object.values(associations).forEach(association => {
+              const associationFieldName =
+                association.as || association.options.name;
+              if (args.input[associationFieldName])
+                include.push(associationFieldName);
+            });
+
+            const instance = await model.create(args.input, { include });
+
             pubsub &&
               pubsub.publish('create' + singularUF, {
                 ['create' + singularUF]: instance,
