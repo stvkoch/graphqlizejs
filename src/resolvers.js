@@ -2,6 +2,11 @@ import upperFirst from 'lodash.upperfirst';
 import first from 'lodash.first';
 import Sequelize from 'sequelize';
 import { withFilter, PubSub } from 'apollo-server';
+const {
+  GraphQLDate,
+  GraphQLDateTime,
+  GraphQLTime,
+} = require('graphql-iso-date');
 
 function getModelName(model) {
   return model.options.gqName || upperFirst(model.tableName);
@@ -36,6 +41,9 @@ export function resolvers(
   getAdditionalresolvers = _ => ({})
 ) {
   const additionalResolvers = {
+    Date: GraphQLDate,
+    Time: GraphQLTime,
+    DateTime: GraphQLDateTime,
     type: {},
     query: {},
     mutation: {},
@@ -103,9 +111,9 @@ export function resolvers(
       if (!model) return acc;
       if (model.options.gqIgnore) return acc;
       if (model.gqSearch === false) return acc;
-      
+
       modelName = getModelName(model);
-      
+
       const singular = Sequelize.Utils.singularize(modelName).toLowerCase();
       const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
@@ -148,7 +156,17 @@ export function resolvers(
       if (model.gqCreate !== false)
         acc['create' + singularUF] = model.options.gqMiddleware.create(
           async (parent, args, context, info) => {
-            const instance = await model.create(args.input);
+            const associations = model.associations || {};
+            const include = [];
+            Object.values(associations).forEach(association => {
+              const associationFieldName =
+                association.as || association.options.name;
+              if (args.input[associationFieldName])
+                include.push(associationFieldName);
+            });
+
+            const instance = await model.create(args.input, { include });
+
             pubsub &&
               pubsub.publish('create' + singularUF, {
                 ['create' + singularUF]: instance,

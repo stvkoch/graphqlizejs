@@ -22,6 +22,11 @@ export function schema(sequelize, extend = '') {
   );
 
   return [
+    `
+    scalar Date
+    scalar Time
+    scalar DateTime
+    `,
     generateInputOperators(sequelize),
     generateInputWhere(sequelize),
     generateInputCreate(sequelize),
@@ -169,6 +174,27 @@ function generateInputCreate(sequelize) {
       acc[modelName][attribute.field] = type;
     });
 
+    Object.values(model.associations).forEach(association => {
+      let name = association.as;
+
+      if (
+        !model.options.gqAssociationAssign ||
+        !model.options.gqAssociationAssign.includes(name)
+      )
+        return;
+
+      const associationType = upperFirst(
+        association.target.options.name.singular ||
+          association.target.options.name
+      );
+
+      let type = `_inputCreate${upperFirst(associationType)}`;
+      if (association.isMultiAssociation) {
+        type = `[_inputCreate${upperFirst(associationType)}]`;
+      }
+
+      acc[modelName][name] = type;
+    });
     return acc;
   }, {});
 
@@ -291,9 +317,7 @@ function generateTypeModels(sequelize) {
         ${Object.values(modelsTypesAssociations[modelName])
           .map(
             association =>
-              `${association.name}(where: _inputWhere${
-                association.associationType
-              }):
+              `${association.name}(where: _inputWhere${association.associationType}):
                 ${association.type}`
           )
           .join('\n')}
@@ -416,9 +440,7 @@ function generateSubscriptions(sequelize) {
   return `type Subscription {
     ${Object.values(modelsSubscriptions)
       .map(subscription => {
-        return `${subscription.name}(${subscription.arguments}): ${
-          subscription.type
-        }`;
+        return `${subscription.name}(${subscription.arguments}): ${subscription.type}`;
       })
       .join('\n')}
   }`;
