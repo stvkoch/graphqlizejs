@@ -221,11 +221,15 @@ describe('Resolvers', function() {
 
         const gqResult = await queryClient({
           query: gql`
-            mutation UpdateProudt($id: ID, $product: _inputUpdateProduct) {
+            mutation UpdateProducts($id: ID, $product: _inputUpdateProduct) {
               product: updateProduct(
                 where: { id: { eq: $id } }
                 input: $product
-              )
+              ) {
+               id
+               description
+               price
+              }
             }
           `,
           variables: {
@@ -238,16 +242,18 @@ describe('Resolvers', function() {
         });
 
         const expectedGqResult = gqResult.data.product;
+          expectedGqResult.id = String(expectedGqResult.id);
         const dbResult = await db.sequelize.models.product.findByPk(10);
         const expectedDbResult = pick(dbResult.toJSON(), [
           'id',
           'description',
           'price',
         ]);
+          expectedDbResult.id = String(expectedDbResult.id);
 
         expect(expectedDbResult).to.not.be.null;
         expect(expectedGqResult).to.not.be.null;
-        expect(expectedGqResult).to.be.eql(1);
+        expect(expectedGqResult).to.be.eql([expectedDbResult]);
         expect(newPrice).to.equal(expectedDbResult.price);
         expect(newDescription).to.be.eql(expectedDbResult.description);
       });
@@ -259,8 +265,10 @@ describe('Resolvers', function() {
 
         const deleteProduct = await queryClient({
           query: gql`
-            mutation DeleteProudt($id: ID) {
-              product: deleteProduct(where: { id: { eq: $id } })
+            mutation DeleteProducts($id: ID) {
+              product: deleteProduct(where: { id: { eq: $id } }) {
+                id
+              }
             }
           `,
           variables: {
@@ -268,7 +276,7 @@ describe('Resolvers', function() {
           },
         });
 
-        const quantityDeletedProduts = deleteProduct.data.product;
+        const quantityDeletedProduts = deleteProduct.data.product.length;
 
         const shouldNotExist = await db.sequelize.models.product.findByPk(
           createdProductId
@@ -372,7 +380,10 @@ describe('Resolvers', function() {
                   productId: { eq: $productId }
                   orderId: { eq: $orderId }
                 }
-              )
+              ) {
+                productId
+                orderId
+              }
             }
           `,
           variables: {
@@ -380,7 +391,9 @@ describe('Resolvers', function() {
             orderId: String(orderId),
           },
         });
-        expect(gqDeleteOrderProduct.data.deleteOrderproduct).to.be.equal(1);
+
+
+        expect(gqDeleteOrderProduct.data.deleteOrderproduct.length).to.be.equal(1);
       });
     });
   });
