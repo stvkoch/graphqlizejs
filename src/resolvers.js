@@ -151,6 +151,7 @@ export function resolvers(
 
       const singular = modelName;
       const singularUF = upperFirst(singular);
+      const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
       if (model.gqCreate !== false)
         acc['create' + singularUF] = model.options.gqMiddleware.create(
@@ -189,7 +190,7 @@ export function resolvers(
                 })
               );
             }
-            return result;
+            return instances;
           }
         );
 
@@ -206,7 +207,7 @@ export function resolvers(
                 })
               );
             }
-            return result;
+            return instances;
           }
         );
 
