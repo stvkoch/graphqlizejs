@@ -34,8 +34,8 @@ You define your models and everything it's available!
 ```
 git clone https://github.com/stvkoch/graphqlize.git
 cd graphqlize
-yarn install# or npm
-yarn example # or npm
+npm install# or npm
+npm run example # or npm
 # open url http://localhost:4000/graphql
 # can access complete generate schema in http://localhost:4000
 ```
