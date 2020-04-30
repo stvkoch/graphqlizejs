@@ -388,7 +388,9 @@ mutation {
   updateCountry(
     where: { id: { eq: "PT" } },
     input: { name: "Purtugaal" }
-  )
+  ) {
+    id
+  }
 }
 ```
 
