@@ -1,22 +1,21 @@
 export default (sequelize, DataTypes) => {
   const Category = sequelize.define(
-    "category",
+    'category',
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
       },
-      name: DataTypes.STRING
+      name: DataTypes.STRING,
     },
     {
       freezeTableName: true,
-      gqName: "Category",
-      gqAssociateCountField: true
+      gqName: 'Category',
     }
   );
 
-  Category.associate = models => {
+  Category.associate = (models) => {
     Category.hasMany(models.product);
   };
 

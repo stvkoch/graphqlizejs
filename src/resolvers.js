@@ -15,7 +15,7 @@ function defaultMiddleware(f) {
   return f;
 }
 function setDefaultMiddlewares(sequelize) {
-  Object.keys(sequelize.models).forEach(key => {
+  Object.keys(sequelize.models).forEach((key) => {
     const model = sequelize.models[key];
 
     if (model.options.gqIgnore) return;
@@ -29,8 +29,8 @@ function setDefaultMiddlewares(sequelize) {
       model.options.gqMiddleware.create = defaultMiddleware;
     if (!model.options.gqMiddleware.update)
       model.options.gqMiddleware.update = defaultMiddleware;
-    if (!model.options.gqMiddleware.destroy)
-      model.options.gqMiddleware.destroy = defaultMiddleware;
+    if (!model.options.gqMiddleware.delete)
+      model.options.gqMiddleware.delete = defaultMiddleware;
     if (!model.options.gqMiddleware.subscribe)
       model.options.gqMiddleware.subscribe = defaultMiddleware;
   });
@@ -38,7 +38,7 @@ function setDefaultMiddlewares(sequelize) {
 export function resolvers(
   sequelize,
   pubsub,
-  getAdditionalresolvers = _ => ({})
+  getAdditionalresolvers = (_) => ({})
 ) {
   const additionalResolvers = {
     Date: GraphQLDate,
@@ -90,7 +90,7 @@ export function resolvers(
                 return parent['get' + associationFieldNameType]({
                   attributes: [[sequelize.fn('count', '*'), 'cnt']],
                   ...generateFindArgs(sequelize, args),
-                }).then(result => result[0].get('cnt'));
+                }).then((result) => result[0].get('cnt'));
               }
             );
 
@@ -110,30 +110,32 @@ export function resolvers(
       const model = sequelize.models[modelName];
       if (!model) return acc;
       if (model.options.gqIgnore) return acc;
-      if (model.gqSearch === false) return acc;
 
       modelName = getModelName(model);
 
       const singular = Sequelize.Utils.singularize(modelName).toLowerCase();
       const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
-      acc[plural] = model.options.gqMiddleware.query(
-        (parent, args, context, info) => {
-          return model.findAll(generateFindArgs(sequelize, args));
-        }
-      );
+      if (model.gqQuery !== false) {
+        acc[plural] = model.options.gqMiddleware.query(
+          (parent, args, context, info) => {
+            return model.findAll(generateFindArgs(sequelize, args));
+          }
+        );
 
-      acc[`_${plural}Count`] = model.options.gqMiddleware.queryCount(
-        (parent, args, context, info) => {
-          return model.count(generateFindArgs(sequelize, args));
-        }
-      );
+        acc[singular] = model.options.gqMiddleware.query(
+          (parent, args, context, info) => {
+            return model.findOne(generateFindArgs(sequelize, args));
+          }
+        );
+      }
 
-      acc[singular] = model.options.gqMiddleware.query(
-        (parent, args, context, info) => {
-          return model.findOne(generateFindArgs(sequelize, args));
-        }
-      );
+      if (model.gqQueryCount !== false)
+        acc[`_${plural}Count`] = model.options.gqMiddleware.queryCount(
+          (parent, args, context, info) => {
+            return model.count(generateFindArgs(sequelize, args));
+          }
+        );
 
       return acc;
     }, {}),
@@ -158,7 +160,7 @@ export function resolvers(
           async (parent, args, context, info) => {
             const associations = model.associations || {};
             const include = [];
-            Object.values(associations).forEach(association => {
+            Object.values(associations).forEach((association) => {
               const associationFieldName =
                 association.as || association.options.name;
               if (args.input[associationFieldName])
@@ -184,7 +186,7 @@ export function resolvers(
             const instances = await model.findAll(nwhere);
             const result = first(resultDb);
             if (result && pubsub) {
-              instances.map(instance =>
+              instances.map((instance) =>
                 pubsub.publish('update' + singularUF, {
                   ['update' + singularUF]: instance,
                 })
@@ -195,13 +197,13 @@ export function resolvers(
         );
 
       if (model.gqDelete !== false)
-        acc['delete' + singularUF] = model.options.gqMiddleware.destroy(
+        acc['delete' + singularUF] = model.options.gqMiddleware.delete(
           async (parent, args, context, info) => {
             const nwhere = generateFindArgs(sequelize, args);
             const instances = await model.findAll(nwhere);
             const result = await model.destroy(nwhere);
             if (result && pubsub) {
-              instances.map(instance =>
+              instances.map((instance) =>
                 pubsub.publish('delete' + singularUF, {
                   ['delete' + singularUF]: instance,
                 })

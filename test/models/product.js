@@ -1,39 +1,29 @@
-/*
-
-{
-    "id": "A101",
-    "description": "Screwdriver",
-    "category": "1",
-    "price": "9.75"
-  },
-
-*/
 export default (sequelize, DataTypes) => {
   const Product = sequelize.define(
-    "product",
+    'product',
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
       },
       description: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
       price: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
-      }
+        allowNull: false,
+      },
     },
     {
-      freezeTableName: true
+      freezeTableName: true,
     }
   );
 
-  Product.associate = models => {
+  Product.associate = (models) => {
     Product.belongsTo(models.category);
-    Product.belongsToMany(models.order, { through: "orderproduct" });
+    Product.belongsToMany(models.order, { through: 'orderproduct' });
   };
 
   return Product;
