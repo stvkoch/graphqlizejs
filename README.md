@@ -263,8 +263,8 @@ query GetCategory {
     id
     name
     totalServices: _servicesCount
-    serviceCountStartU: _servicesCount(where: {name: {like:"%u%"}})
-    services(where: {name:{like:"%u%"}}) {
+    serviceCountStartU: _servicesCount(where: {name: {like:"u%"}})
+    services(where: {name:{like:"u%"}}) {
       id
       name
     }
