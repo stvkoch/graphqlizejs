@@ -106,7 +106,7 @@ schema> https://graphqlize.herokuapp.com/
 Let's imagine that we have follow models (example folder):
 
 ```
-// models/category.js file
+// models/category.js file with all graphqlizejs options available
 export default (sequelize, DataTypes) => {
   const Category = sequelize.define(
     "category",
@@ -114,12 +114,56 @@ export default (sequelize, DataTypes) => {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
+
+         // option enable/disable graphql prop [default: false]
+        gqIgnore: false
       },
-      name: DataTypes.STRING
+      name: {
+        type: DataTypes.STRING,
+
+        // option enable/disable graphql prop [default: false]
+        gqIgnore: false
+      }
     },
     {
-      freezeTableName: true
+      freezeTableName: true,
+
+      // optional different name for graphql
+      gqName: 'category',
+
+      // option enable/disable generate all grapqhl queries/mutations for this model [default: false]
+      gqIgnore: false,
+
+      // option enable/disable generate grapqhl query for this model [default: true]
+      gqQuery: true,
+
+      // option enable/disable generate grapqhl query count  for this model [default: true]
+      gqQueryCount: true,
+
+      // option enable/disable generate grapqhl mutation create for this model [default: true]
+      gqCreate: true,
+
+      // option enable/disable generate grapqhl mutation update for this model [default: true]
+      gqUpdate: true,
+
+      // option enable/disable generate grapqhl mutation delete for this model [default: true]
+      gqDelete: true,
+
+      // enable/disable generate grapqhl subscriptions of follow operations [default: false]
+      gqSubscriptionCreate: false,
+      gqSubscriptionUpdate: false,
+      gqSubscriptionDelete: false,
+
+      // set middlewares for each operations to restrict or changes requests or results [default: defaultMiddleware]
+      gqMiddleware: {
+        query: defaultMiddleware,
+        queryCount: defaultMiddleware,
+        create: defaultMiddleware,
+        update: defaultMiddleware,
+        delete: defaultMiddleware,
+        subscribe: defaultMiddleware
+      }
     }
   );
   Category.associate = models => {
