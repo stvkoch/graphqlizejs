@@ -8,7 +8,7 @@ function assertNotEmpty(obj, msg) {
     throw Error(msg || 'Object should be not a undefined or null');
 }
 
-function getTypeFromAttribute(attribute){
+function getTypeFromAttribute(attribute) {
   return attribute.type.key.split(' ')[0]; // TODO: use common approach
 }
 
@@ -48,10 +48,10 @@ function generateInputOperators(sequelize) {
     assertNotEmpty(model);
     if (model.options.gqIgnore) return acc;
 
-    Object.values(model.rawAttributes).forEach(attribute => {
+    Object.values(model.rawAttributes).forEach((attribute) => {
       if (attribute.gqIgnore) return acc;
 
-      let type = getTypeFromAttribute(attribute)
+      let type = getTypeFromAttribute(attribute);
       if (attribute.primaryKey) {
         type = 'ID';
       }
@@ -66,10 +66,10 @@ function generateInputOperators(sequelize) {
   }, {});
 
   return Object.values(modelsTypes)
-    .map(gqType => {
+    .map((gqType) => {
       return `input _input${gqType}Operator {
             ${Object.keys(operatorsAny)
-              .map(op => {
+              .map((op) => {
                 if (operatorsAny[op] === null) return `${op}: ${gqType}`;
                 return `${op}: [${gqType}]`;
               })
@@ -77,7 +77,7 @@ function generateInputOperators(sequelize) {
               ${
                 gqType === 'String'
                   ? Object.keys(operatorsString)
-                      .map(op => {
+                      .map((op) => {
                         if (operatorsString[op] === null)
                           return `${op}: ${gqType}`;
                         return `${op}: [${gqType}]`;
@@ -98,7 +98,7 @@ function generateInputWhere(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).forEach(attribute => {
+    Object.values(model.rawAttributes).forEach((attribute) => {
       if (attribute.gqIgnore) return;
       if (attribute.type instanceof Sequelize.VIRTUAL) return;
 
@@ -115,9 +115,9 @@ function generateInputWhere(sequelize) {
   }, {});
 
   return Object.keys(modelsWheres).map(
-    modelName => `input _inputWhere${modelName} {
+    (modelName) => `input _inputWhere${modelName} {
     ${Object.keys(modelsWheres[modelName]).map(
-      fieldName => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
+      (fieldName) => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
     )}
     _offset: Int
     _limit: Int
@@ -131,12 +131,12 @@ function generateInputWhere(sequelize) {
 function generateInputCreate(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
-    if (model.options.gqIgnore) return acc;
+    if (model.options.gqIgnore || model.options.gqCreate === false) return acc;
 
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).forEach(attribute => {
+    Object.values(model.rawAttributes).forEach((attribute) => {
       if (attribute.gqIgnore) return;
       if (
         model.options.gqInputCreateWithPrimaryKeys !== true &&
@@ -174,7 +174,7 @@ function generateInputCreate(sequelize) {
       acc[modelName][attribute.field] = type;
     });
 
-    Object.values(model.associations).forEach(association => {
+    Object.values(model.associations).forEach((association) => {
       let name = association.as;
 
       if (
@@ -199,9 +199,9 @@ function generateInputCreate(sequelize) {
   }, {});
 
   return Object.keys(modelsWheres).map(
-    modelName => `input _inputCreate${modelName} {
+    (modelName) => `input _inputCreate${modelName} {
     ${Object.keys(modelsWheres[modelName]).map(
-      fieldName => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
+      (fieldName) => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
     )}
   }`
   );
@@ -211,12 +211,12 @@ function generateInputCreate(sequelize) {
 function generateInputUpdate(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
-    if (model.options.gqIgnore) return acc;
+    if (model.options.gqIgnore || model.options.gqUpdate === false) return acc;
 
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).forEach(attribute => {
+    Object.values(model.rawAttributes).forEach((attribute) => {
       if (attribute.gqIgnore) return;
 
       if (attribute.primaryKey && !model.options.gqInputUpdateWithPrimaryKeys) {
@@ -233,9 +233,9 @@ function generateInputUpdate(sequelize) {
   }, {});
 
   return Object.keys(modelsWheres).map(
-    modelName => `input _inputUpdate${modelName} {
+    (modelName) => `input _inputUpdate${modelName} {
     ${Object.keys(modelsWheres[modelName]).map(
-      fieldName => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
+      (fieldName) => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
     )}
   }`
   );
@@ -250,7 +250,7 @@ function generateTypeModels(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.rawAttributes).forEach(attribute => {
+    Object.values(model.rawAttributes).forEach((attribute) => {
       if (attribute.gqIgnore === true) return;
 
       let type = upperFirst(mapTypes(getTypeFromAttribute(attribute)));
@@ -271,7 +271,7 @@ function generateTypeModels(sequelize) {
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
 
-    Object.values(model.associations).forEach(association => {
+    Object.values(model.associations).forEach((association) => {
       if (association.target.options.gqIgnore) return;
 
       const associationType = upperFirst(
@@ -309,14 +309,14 @@ function generateTypeModels(sequelize) {
   }, {});
 
   return Object.keys(modelsTypes)
-    .map(modelName => {
+    .map((modelName) => {
       return `type ${modelName} {
       ${Object.keys(modelsTypes[modelName])
-        .map(fieldName => `${fieldName}:${modelsTypes[modelName][fieldName]}`)
+        .map((fieldName) => `${fieldName}:${modelsTypes[modelName][fieldName]}`)
         .join('\n')}
         ${Object.values(modelsTypesAssociations[modelName])
           .map(
-            association =>
+            (association) =>
               `${association.name}(where: _inputWhere${association.associationType}):
                 ${association.type}`
           )
@@ -329,7 +329,7 @@ function generateTypeModels(sequelize) {
 function generateQueries(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsQueries = models.reduce((acc, model) => {
-    if (model.options.gqIgnore) return acc;
+    if (model.options.gqIgnore || model.options.gqQuery === false) return acc;
 
     let name = getModelName(model);
     const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
@@ -356,7 +356,7 @@ function generateQueries(sequelize) {
 
   return `type Query {
     ${Object.values(modelsQueries)
-      .map(query => {
+      .map((query) => {
         return `${query.name}(where: _inputWhere${query.input}): ${query.type}`;
       })
       .join('\n')}
@@ -371,30 +371,33 @@ function generateMutations(sequelize) {
     const name = upperFirst(getModelName(model));
 
     let operation = `create${name}`;
-    acc[operation] = {
-      name: operation,
-      arguments: `input: _inputCreate${name}`,
-      type: `${name}!`,
-    };
+    if (model.options.gqCreate !== false)
+      acc[operation] = {
+        name: operation,
+        arguments: `input: _inputCreate${name}`,
+        type: `${name}!`,
+      };
     operation = `update${name}`;
-    acc[operation] = {
-      name: operation,
-      arguments: `where: _inputWhere${name}, input: _inputUpdate${name}`,
-      type: `[${name}]`,
-    };
+    if (model.options.gqUpdate !== false)
+      acc[operation] = {
+        name: operation,
+        arguments: `where: _inputWhere${name}, input: _inputUpdate${name}`,
+        type: `[${name}]`,
+      };
     operation = `delete${name}`;
-    acc[operation] = {
-      name: operation,
-      arguments: `where: _inputWhere${name}`,
-      type: `[${name}]`,
-    };
+    if (model.options.gqDelete !== false)
+      acc[operation] = {
+        name: operation,
+        arguments: `where: _inputWhere${name}`,
+        type: `[${name}]`,
+      };
 
     return acc;
   }, {});
 
   return `type Mutation {
     ${Object.values(modelsMutations)
-      .map(mutation => {
+      .map((mutation) => {
         return `${mutation.name}(${mutation.arguments}): ${mutation.type}`;
       })
       .join('\n')}
@@ -439,7 +442,7 @@ function generateSubscriptions(sequelize) {
 
   return `type Subscription {
     ${Object.values(modelsSubscriptions)
-      .map(subscription => {
+      .map((subscription) => {
         return `${subscription.name}(${subscription.arguments}): ${subscription.type}`;
       })
       .join('\n')}
