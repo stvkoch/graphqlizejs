@@ -21,7 +21,7 @@ const schemaGenerated = prettier.format(schema(db.sequelize, extend), {
   parser: 'graphql',
 });
 
-const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
+const resolversGenerated = resolvers(db.sequelize, pubsub, (sequelize) => ({
   mutation: {
     // // https://blog.apollographql.com/file-uploads-with-apollo-server-2-0-5db2f3f60675
     // async singleUpload(parent, { file }) {
@@ -47,7 +47,7 @@ const resolversGenerated = resolvers(db.sequelize, pubsub, sequelize => ({
     // }
   },
 }));
-
+console.log(resolversGenerated);
 const configurations = {
   production: {
     ssl: false,

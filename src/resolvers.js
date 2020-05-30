@@ -116,7 +116,7 @@ export function resolvers(
       const singular = Sequelize.Utils.singularize(modelName).toLowerCase();
       const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
-      if (model.gqQuery !== false) {
+      if (model.options.gqQuery !== false) {
         acc[plural] = model.options.gqMiddleware.query(
           (parent, args, context, info) => {
             return model.findAll(generateFindArgs(sequelize, args));
@@ -130,7 +130,7 @@ export function resolvers(
         );
       }
 
-      if (model.gqQueryCount !== false)
+      if (model.options.gqQueryCount !== false)
         acc[`_${plural}Count`] = model.options.gqMiddleware.queryCount(
           (parent, args, context, info) => {
             return model.count(generateFindArgs(sequelize, args));
@@ -146,6 +146,7 @@ export function resolvers(
   resolvers.Mutation = {
     ...Object.keys(sequelize.models).reduce((acc, modelName) => {
       const model = sequelize.models[modelName];
+
       if (!model) return acc;
       if (model.options.gqIgnore) return acc;
 
@@ -153,9 +154,8 @@ export function resolvers(
 
       const singular = modelName;
       const singularUF = upperFirst(singular);
-      const plural = Sequelize.Utils.pluralize(modelName).toLowerCase();
 
-      if (model.gqCreate !== false)
+      if (model.options.gqCreate !== false)
         acc['create' + singularUF] = model.options.gqMiddleware.create(
           async (parent, args, context, info) => {
             const associations = model.associations || {};
@@ -177,7 +177,7 @@ export function resolvers(
           }
         );
 
-      if (model.gqUpdate !== false)
+      if (model.options.gqUpdate !== false)
         acc['update' + singularUF] = model.options.gqMiddleware.update(
           async (parent, args, context, info) => {
             const { input: updateValues } = args;
@@ -196,7 +196,7 @@ export function resolvers(
           }
         );
 
-      if (model.gqDelete !== false)
+      if (model.options.gqDelete !== false)
         acc['delete' + singularUF] = model.options.gqMiddleware.delete(
           async (parent, args, context, info) => {
             const nwhere = generateFindArgs(sequelize, args);

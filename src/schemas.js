@@ -94,6 +94,8 @@ function generateInputWhere(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsWheres = models.reduce((acc, model) => {
     if (model.options.gqIgnore) return acc;
+    if (model.options.gqQuery === false && model.options.gqQueryCount === false)
+      return acc;
 
     const modelName = getModelName(model);
     if (!acc[modelName]) acc[modelName] = {};
@@ -329,27 +331,30 @@ function generateTypeModels(sequelize) {
 function generateQueries(sequelize) {
   const models = Object.values(sequelize.models);
   const modelsQueries = models.reduce((acc, model) => {
-    if (model.options.gqIgnore || model.options.gqQuery === false) return acc;
+    if (model.options.gqIgnore) return acc;
 
     let name = getModelName(model);
     const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
     const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
     name = upperFirst(name);
-    acc[singularModelName] = {
-      name: singularModelName,
-      input: name,
-      type: name,
-    };
-    acc[pluralModelName] = {
-      name: pluralModelName,
-      input: name,
-      type: `[${name}!]!`,
-    };
-    acc[`_${pluralModelName}Count`] = {
-      name: `_${pluralModelName}Count`,
-      input: name,
-      type: `Int!`,
-    };
+    if (model.options.gqQuery !== false) {
+      acc[singularModelName] = {
+        name: singularModelName,
+        input: name,
+        type: name,
+      };
+      acc[pluralModelName] = {
+        name: pluralModelName,
+        input: name,
+        type: `[${name}!]!`,
+      };
+    }
+    if (model.options.gqQueryCount !== false)
+      acc[`_${pluralModelName}Count`] = {
+        name: `_${pluralModelName}Count`,
+        input: name,
+        type: `Int!`,
+      };
 
     return acc;
   }, {});
