@@ -13,9 +13,9 @@ export default (sequelize, DataTypes) => {
     },
     {
       // gqIgnore: true,
-      gqCreate: false,
-      gqQueryCount: false,
-      gqDelete: false,
+      // gqCreate: false,
+      // gqQueryCount: false,
+      // gqDelete: false,
       freezeTableName: true,
     }
   );
