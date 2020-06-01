@@ -159,7 +159,9 @@ export function resolvers(
         acc['create' + singularUF] = model.options.gqMiddleware.create(
           async (parent, args, context, info) => {
             const associations = model.associations || {};
-            const include = [];
+            let include = [];
+            let instance = null;
+
             Object.values(associations).forEach((association) => {
               const associationFieldName =
                 association.as || association.options.name;
@@ -167,16 +169,22 @@ export function resolvers(
                 include.push(associationFieldName);
             });
 
-            const t = await sequelize.transaction();
-            const instance = await model.create(args.input, {
-              transaction: t,
-              include,
-            });
+            const perfomCreation = async (t) => {
+              return await model.create(args.input, {
+                transaction: t,
+                include,
+              });
+            };
+
+            if (include.length > 0)
+              instance = await sequelize.transaction(perfomCreation);
+            else instance = await perfomCreation();
 
             pubsub &&
               pubsub.publish('create' + singularUF, {
                 ['create' + singularUF]: instance,
               });
+
             return instance;
           }
         );
