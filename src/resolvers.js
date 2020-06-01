@@ -167,7 +167,11 @@ export function resolvers(
                 include.push(associationFieldName);
             });
 
-            const instance = await model.create(args.input, { include });
+            const t = await sequelize.transaction();
+            const instance = await model.create(args.input, {
+              transaction: t,
+              include,
+            });
 
             pubsub &&
               pubsub.publish('create' + singularUF, {

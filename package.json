@@ -1,7 +1,7 @@
 {
   "name": "graphqlizejs",
   "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "main": "./lib/index.js",
   "engines": {
     "node": ">=10.0"
