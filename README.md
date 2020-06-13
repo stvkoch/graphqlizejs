@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/stvkoch/graphqlizejs.svg?branch=master)](https://travis-ci.com/stvkoch/graphqlizejs)
 [![NPM](https://img.shields.io/npm/v/graphqlizejs.svg)](https://www.npmjs.com/package/graphqlizejs) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-Graphqlizejs automatic generate data types and resolvers for graphql servers from your sequelizejs models!
+Graphqlizejs automatically generate data types and resolvers for graphql servers from your sequelizejs models!
 
 > _it's awesome... really awesome!_
 
@@ -40,11 +40,11 @@ npm run example # or npm
 # can access complete generate schema in http://localhost:4000
 ```
 
-### It's awesome because SequelizeJs it's very powerfull!
+### It's awesome because SequelizeJs it's very powerful!
 
 Do you know about sequelizejs?
 
-- No? Then checkout the site http://docs.sequelizejs.com/
+- No? Then check out the site http://docs.sequelizejs.com/
 
 You can do a lot of things with sequelizejs and Graphqlizejs automagic generate graphql datatype and resolvers from your models
 
@@ -249,11 +249,11 @@ variable:
 }
 ```
 
-> To avoid collidions names, graphqlizejs generate input names and counter association fields starting with underscore character. Example: \_associationsCount, \_inputs.
+> To avoid collisions names, graphqlizejs generate input names and counter association fields starting with an underscore character. Example: \_associationsCount, \_inputs.
 
 ### Simple Count Queries
 
-Each associate field defined in your model has your own counter field called by _underscore_ + _association name_ + _Count_ word.
+Each associate field defined in your model has your counter field called by _underscore_ + _association name_ + _Count_ word.
 
 In the example, below look for \_servicesCount.
 
@@ -289,11 +289,11 @@ query GetCategory {
 }
 ```
 
-You also, can filter your associoations data as you did "Simple Queries With Conditions" example.
+You also can filter your association's data as you did "Simple Queries With Conditions" example.
 
 ### Association Count Queries
 
-Each query also have your counter association field follow same name definition: _underscore_ + model name* + \_Count* word.
+Each query also has your counter association field follow the same name definition: _underscore_ + model name* + \_Count* word.
 
 ```
 query GetCategoryCount {
@@ -304,16 +304,16 @@ query GetCategoryCount {
 
 ## Inputs Where
 
-For each model, graphqlize will create a graphql input with all available model fields to be used in you conditions.
-You will see that, the fields defined in your input not use the model type, instead it's used the type \_input _Type_ Operator\_ that will hold all operators supported by the model type specified.
+For each model, graphqlize will create a graphql input with all available model fields to be used in your conditions.
+You will see that, the fields defined in your input not use the model type, instead, it's used the type \_input _Type_ Operator\_ that will hold all operators supported by the model type specified.
 
 For instance _country_ model, graphqlize will generate the \__inputWhereCountry_.
 
 ## Inputs Operators
 
-Sequelize ORM support several query operators to allow filtered your data using findAll method. For this reason was create \_inputTypeOperator.
+Sequelize ORM supports several query operators to allow filtered your data using findAll method. For this reason was create \_inputTypeOperator.
 
-Most of types support the follow operators:
+Most of the types support the following operators:
 
 ```
 eq
@@ -354,7 +354,7 @@ strictRight
 
 ## Inputs Create and Update
 
-To able to mutate your data you will need to hold your data inside of input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models.
+To able to mutate your data you will need to hold your data inside of the input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models.
 
 ### Input Create
 
@@ -370,7 +370,7 @@ type _inputCreateCountry {
 }
 ```
 
-> Note that graphqlizejs didn't create the input with the primary keys. If you want create or update yours primary keys, enable graphqlizejs to create the input with the primary keys setting the model options with:
+> Note that graphqlizejs didn't create the input with the primary keys. If you want to create or update your primary keys, enable graphqlizejs to create the input with the primary keys setting the model options with:
 
 ```
 gqInputCreateWithPrimaryKeys: true
@@ -388,7 +388,7 @@ type _inputUpdateCountry {
 }
 ```
 
-Same way, if you want enable update primary keys set the model option:
+Same way, if you want to enable update primary keys set the model option:
 
 ```
 gqInputUpdateWithPrimaryKeys: true
@@ -440,7 +440,7 @@ mutation {
 
 ## Middlewares Resolvers
 
-Middleware is the way to add some control over the model resolvers. You can add middlewares receiving the next resolver and returning the function with same assignature found in apollo server resolvers (root/parent, args, context, info) arguments.
+Middleware is the way to add some control over the model resolvers. You can add middlewares receiving the next resolver and returning the function with the same signature found in apollo server resolvers (root/parent, args, context, info) arguments.
 
 Defining middleware:
 
@@ -450,7 +450,7 @@ function requireUser(nextResolver) {
     if (!context.user)
       throw new AuthenticationError('Required valid authentication.');
 
-    // you always should call the next resolver if you want keep flow the resolvers.
+    // you always should call the next resolver if you want to keep flow the resolvers.
     return nextResolver(parent, args, context, info);
   }
 }
