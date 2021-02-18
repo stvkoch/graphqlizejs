@@ -26,6 +26,8 @@ export function schema(sequelize, extend = '') {
     scalar Date
     scalar Time
     scalar DateTime
+    scalar JSON
+    scalar JSONB
     `,
     generateInputOperators(sequelize),
     generateInputWhere(sequelize),
@@ -65,9 +67,7 @@ function generateInputOperators(sequelize) {
     return acc;
   }, {});
 
-  return Object.values(modelsTypes)
-    .map((gqType) => {
-      return `input _input${gqType}Operator {
+  const conditionsToString = (gqType) => `
             ${Object.keys(operatorsAny)
               .map((op) => {
                 if (operatorsAny[op] === null) return `${op}: ${gqType}`;
@@ -85,9 +85,27 @@ function generateInputOperators(sequelize) {
                       .join('\n')
                   : ''
               }
-        }`;
+  `;
+
+  return Object.values(modelsTypes)
+    .filter(gqType => !['JSON', 'JSONB'].includes(gqType))
+    .map((gqType) => {
+      return `input _input${gqType}Operator {
+            ${conditionsToString(gqType)}
+      }`;
     })
-    .join('\n');
+    .join('\n')
+    .concat(`
+    input _inputJSONBOperator {
+      path: String,
+      where: _inputStringOperator
+    }
+    `)
+    .concat(`
+    input _inputJSONOperator {
+      ${conditionsToString('String')}
+    }
+    `);
 }
 
 function generateInputWhere(sequelize) {
@@ -108,6 +126,11 @@ function generateInputWhere(sequelize) {
       if (attribute.primaryKey) {
         type = 'ID';
       }
+
+      // if (type === 'JSON' || type === 'JSONB') {
+
+      //   acc[modelName][attribute.field] = inputOperatorName;
+      // }
 
       const inputOperatorName = `_input${type}Operator`;
       acc[modelName][attribute.field] = inputOperatorName;

@@ -35,7 +35,7 @@ You define your models and everything it's available!
 git clone https://github.com/stvkoch/graphqlize.git
 cd graphqlize
 npm install# or npm
-npm run example # or npm
+npm start # or npm
 # open url http://localhost:4000/graphql
 # can access complete generate schema in http://localhost:4000
 ```
@@ -97,6 +97,17 @@ schema> https://graphqlize.herokuapp.com/
     id
     name
     price
+  }
+
+  # query over JSONB structures
+  overJsonb: services(where: { meta: { path: "meta.baz.foo", where: { eq: "baz" } } }) {
+    id
+    meta
+    countryId
+    country {
+      id
+      name
+    }
   }
 }
 ```
@@ -184,7 +195,11 @@ export default (sequelize, DataTypes) => {
         autoIncrement: true
       },
       name: DataTypes.STRING,
-      price: DataTypes.DECIMAL(10, 2)
+      price: DataTypes.DECIMAL(10, 2),
+      meta: {
+        type: DataTypes.JSONB,
+        allowNull: false
+      }
     },
     {
       freezeTableName: true
@@ -352,6 +367,10 @@ strictLeft
 strictRight
 ```
 
+JSONB type support same operators found into String
+
+in JSON type you can't query looking into the JSON struture, JSON as storage as String/Text, so you can use String operators
+
 ## Inputs Create and Update
 
 To able to mutate your data you will need to hold your data inside of the input mutation type. Graphqlizejs will generate the \_inputCreate and \_inputUpdate for each model and _through_ models.
@@ -497,3 +516,5 @@ export default (sequelize, DataTypes) => {
 ## Complete example
 
 https://github.com/stvkoch/example-graphqlizejs
+
+

@@ -2,6 +2,8 @@ import upperFirst from 'lodash.upperfirst';
 import first from 'lodash.first';
 import Sequelize from 'sequelize';
 import { withFilter, PubSub } from 'apollo-server';
+import GraphQLJSON, { GraphQLJSONObject } from 'graphql-type-json';
+
 const {
   GraphQLDate,
   GraphQLDateTime,
@@ -15,7 +17,7 @@ function defaultMiddleware(f) {
   return f;
 }
 function setDefaultMiddlewares(sequelize) {
-  Object.keys(sequelize.models).forEach((key) => {
+  Object.keys(sequelize.models).forEach(key => {
     const model = sequelize.models[key];
 
     if (model.options.gqIgnore) return;
@@ -38,9 +40,12 @@ function setDefaultMiddlewares(sequelize) {
 export function resolvers(
   sequelize,
   pubsub,
-  getAdditionalresolvers = (_) => ({})
+  getAdditionalresolvers = _ => ({})
 ) {
+
   const additionalResolvers = {
+    JSON: GraphQLJSON,
+    JSONB: GraphQLJSONObject,
     Date: GraphQLDate,
     Time: GraphQLTime,
     DateTime: GraphQLDateTime,
@@ -162,14 +167,14 @@ export function resolvers(
             let include = [];
             let instance = null;
 
-            Object.values(associations).forEach((association) => {
+            Object.values(associations).forEach(association => {
               const associationFieldName =
                 association.as || association.options.name;
               if (args.input[associationFieldName])
                 include.push(associationFieldName);
             });
 
-            const perfomCreation = async (t) => {
+            const perfomCreation = async t => {
               return await model.create(args.input, {
                 transaction: t,
                 include,
@@ -198,7 +203,7 @@ export function resolvers(
             const instances = await model.findAll(nwhere);
             const result = first(resultDb);
             if (result && pubsub) {
-              instances.map((instance) =>
+              instances.map(instance =>
                 pubsub.publish('update' + singularUF, {
                   ['update' + singularUF]: instance,
                 })
@@ -215,7 +220,7 @@ export function resolvers(
             const instances = await model.findAll(nwhere);
             const result = await model.destroy(nwhere);
             if (result && pubsub) {
-              instances.map((instance) =>
+              instances.map(instance =>
                 pubsub.publish('delete' + singularUF, {
                   ['delete' + singularUF]: instance,
                 })
@@ -334,19 +339,6 @@ function generateFindArgs(sequelize, args) {
     ...whereArgs
   } = rawWhere;
 
-  function keyToOp(key) {
-    return Sequelize.Op[key] || key;
-  }
-  function convertKeyToOperator(values) {
-    if (!Array.isArray(values) && typeof values === 'object') {
-      return Object.keys(values).reduce((result, key) => {
-        result[keyToOp(key)] = convertKeyToOperator(values[key]);
-        return result;
-      }, {});
-    }
-    return values;
-  }
-
   const where = convertKeyToOperator(whereArgs);
 
   return {
@@ -356,4 +348,24 @@ function generateFindArgs(sequelize, args) {
     group,
     where,
   };
+}
+
+function keyToOp(key) {
+  return Sequelize.Op[key] || key;
+}
+
+function convertKeyToOperator(values) {
+  if (!Array.isArray(values) && typeof values === 'object') {
+    return Object.keys(values).reduce((result, key) => {
+      if (values[key].path) {
+        const {path, where} = values[key]
+        result[path] = convertKeyToOperator(where)
+        return result
+      }
+
+      result[keyToOp(key)] = convertKeyToOperator(values[key]);
+      return result;
+    }, {});
+  }
+  return values;
 }

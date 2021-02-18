@@ -15,6 +15,10 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
       },
+      meta: {
+        type: DataTypes.JSONB,
+        allowNull: true
+      }
     },
     {
       freezeTableName: true,

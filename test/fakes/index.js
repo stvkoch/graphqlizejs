@@ -38,7 +38,12 @@ export function generateFakes(db) {
         times(50, () => ({
           description: faker.lorem.sentence(),
           price: faker.commerce.price(),
-          categoryId: random(1, 5)
+          categoryId: random(1, 5),
+          meta: {
+            image: faker.image.animals(300,300),
+            material:  faker.commerce.productMaterial(),
+            color: 'transparent'
+          }
         }))
       )
     )

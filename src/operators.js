@@ -12,6 +12,7 @@ export const operatorsAny = {
   between: [],
   notBetween: [],
 };
+
 export const operatorsString = {
   like: null,
   notLike: null,

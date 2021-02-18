@@ -25,6 +25,8 @@ export const mapSequelizeToGraphql = {
   DECIMAL: 'Float',
   BOOLEAN: 'Boolean',
   VIRTUAL: 'String',
+  JSON: 'JSON',
+  JSONB: 'JSONB',
   DEFAULT_TYPE: 'String',
 };
 

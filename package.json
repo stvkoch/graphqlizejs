@@ -1,7 +1,7 @@
 {
   "name": "graphqlizejs",
   "description": "Generate DataTypes and Resolvers from your ORM Sequilize models",
-  "version": "0.3.13",
+  "version": "0.4.0",
   "main": "./lib/index.js",
   "engines": {
     "node": ">=10.0"
@@ -53,6 +53,7 @@
     "faker": "^4.1.0",
     "graphql": "^14.6.0",
     "graphql-tag": "^2.10.3",
+    "graphql-type-json": "^0.3.2",
     "hasha": "^3.0.0",
     "lodash.pick": "^4.4.0",
     "lodash.random": "^3.2.0",

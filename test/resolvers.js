@@ -176,6 +176,28 @@ describe('Resolvers', function() {
         // expect
         expect(expectedDbCustomerResult).to.be.eql(expectedGqResult);
       });
+      it('should query over JSONB types', async function() {
+
+        const fields = ['id', 'name', 'since', 'revenue'];
+        const gqResult = await queryClient({
+          query: gql`
+            query searchProducts($metaCondition: _inputJSONBOperator ) {
+              products(where: { meta: $metaCondition }) {
+                id
+                description
+                price
+                meta
+              }
+            }
+          `,
+          variables: { path: 'meta.color', where: { eq: 'transparent' }},
+        });
+        const expectedGqResult = gqResult.data.products;
+        //db
+        const dbProductsResult = await db.sequelize.models.product.findAll();
+        // expect
+        expect(dbProductsResult.length).to.be.eql(expectedGqResult.length);
+      });
     });
 
     describe('Mutation', function() {
@@ -187,7 +209,8 @@ describe('Resolvers', function() {
               product: createProduct(input: $product) {
                 id
                 description
-                price
+                price,
+                meta
               }
             }
           `,
@@ -208,7 +231,7 @@ describe('Resolvers', function() {
         const expectedGqResult = converToStr(gqResult.data.product);
 
         const expectedDbResult = converToStr(
-          pick(dbResult.toJSON(), ['id', 'description', 'price'])
+          pick(dbResult.toJSON(), ['id', 'description', 'price', 'meta'])
         );
         expect(expectedDbResult).to.not.be.null;
         expect(expectedGqResult).to.not.be.null;
