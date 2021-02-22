@@ -1,3 +1,10 @@
-#run example
+## Example
+
+To run this example:
+
+```
+git clone git@github.com:stvkoch/graphqlizejs.git
 cd graphqlize
-yarn example
+npm i
+npm run start
+```
