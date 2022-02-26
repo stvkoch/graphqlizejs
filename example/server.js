@@ -48,6 +48,8 @@ const resolversGenerated = resolvers(db.sequelize, pubsub, (sequelize) => ({
   },
 }));
 console.log(resolversGenerated);
+console.log(schemaGenerated);
+
 const configurations = {
   production: {
     ssl: false,
@@ -68,6 +70,7 @@ const apollo = new ApolloServer({
   typeDefs: gql(schemaGenerated),
   resolvers: resolversGenerated,
 });
+
 
 const app = express();
 apollo.applyMiddleware({ app });

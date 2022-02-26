@@ -21,6 +21,8 @@ export function schema(sequelize, extend = '') {
     `schema function should receive a sequelize instance, received ${typeof sequelize}`
   );
 
+  storeModelNames(sequelize)
+
   return [
     `
     scalar Date
@@ -40,8 +42,26 @@ export function schema(sequelize, extend = '') {
     extend,
   ].join('\n');
 }
+
+const modelNames = {}
+export function storeModelNames (sequelize) {
+
+  Object.values(sequelize.models).forEach(model => {
+    const name = model.tableName.toLowerCase()
+    const gqName = (model.options.gqName || name).toLowerCase()
+    const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
+    const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
+    const singularGqName = Sequelize.Utils.singularize(gqName).toLowerCase();
+    const pluralGqName = Sequelize.Utils.pluralize(gqName).toLowerCase();
+
+    modelNames[singularModelName] = singularGqName
+    modelNames[pluralModelName] = pluralGqName
+    modelNames[name] = gqName
+  })
+}
+
 export function getModelName(model) {
-  return model.options.gqName || upperFirst(model.tableName);
+  return upperFirst((modelNames[model.tableName || model] || model).toLowerCase() )
 }
 
 function generateInputOperators(sequelize) {
@@ -90,7 +110,7 @@ function generateInputOperators(sequelize) {
   return Object.values(modelsTypes)
     .filter(gqType => !['JSON', 'JSONB'].includes(gqType))
     .map((gqType) => {
-      return `input _input${gqType}Operator {
+      return `input _input${upperFirst(gqType)}Operator {
             ${conditionsToString(gqType)}
       }`;
     })
@@ -132,7 +152,7 @@ function generateInputWhere(sequelize) {
       //   acc[modelName][attribute.field] = inputOperatorName;
       // }
 
-      const inputOperatorName = `_input${type}Operator`;
+      const inputOperatorName = `_input${upperFirst(type)}Operator`;
       acc[modelName][attribute.field] = inputOperatorName;
     });
 
@@ -140,7 +160,7 @@ function generateInputWhere(sequelize) {
   }, {});
 
   return Object.keys(modelsWheres).map(
-    (modelName) => `input _inputWhere${modelName} {
+    (modelName) => `input _inputWhere${upperFirst(modelName)} {
     ${Object.keys(modelsWheres[modelName]).map(
       (fieldName) => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
     )}
@@ -208,10 +228,10 @@ function generateInputCreate(sequelize) {
       )
         return;
 
-      const associationType = upperFirst(
+      const associationType = upperFirst(getModelName(
         association.target.options.name.singular ||
           association.target.options.name
-      );
+      ));
 
       let type = `_inputCreate${upperFirst(associationType)}`;
       if (association.isMultiAssociation) {
@@ -224,7 +244,7 @@ function generateInputCreate(sequelize) {
   }, {});
 
   return Object.keys(modelsWheres).map(
-    (modelName) => `input _inputCreate${modelName} {
+    (modelName) => `input _inputCreate${upperFirst(getModelName(modelName))} {
     ${Object.keys(modelsWheres[modelName]).map(
       (fieldName) => `${fieldName}: ${modelsWheres[modelName][fieldName]}`
     )}
@@ -299,11 +319,11 @@ function generateTypeModels(sequelize) {
     Object.values(model.associations).forEach((association) => {
       if (association.target.options.gqIgnore) return;
 
-      const associationType = upperFirst(
+      const associationType = getModelName(
         association.target.options.name.singular ||
           association.target.options.name
       );
-      let name = association.as;
+      let name = getModelName(association.as).toLowerCase();
       let collection = false;
       let allowNull = true;
       let type = upperFirst(associationType);
@@ -342,7 +362,7 @@ function generateTypeModels(sequelize) {
         ${Object.values(modelsTypesAssociations[modelName])
           .map(
             (association) =>
-              `${association.name}(where: _inputWhere${association.associationType}):
+              `${association.name}(where: _inputWhere${upperFirst(getModelName(association.associationType))}):
                 ${association.type}`
           )
           .join('\n')}
@@ -357,8 +377,8 @@ function generateQueries(sequelize) {
     if (model.options.gqIgnore) return acc;
 
     let name = getModelName(model);
-    const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
     const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
+    const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
     name = upperFirst(name);
     if (model.options.gqQuery !== false) {
       acc[singularModelName] = {
@@ -385,7 +405,7 @@ function generateQueries(sequelize) {
   return `type Query {
     ${Object.values(modelsQueries)
       .map((query) => {
-        return `${query.name}(where: _inputWhere${query.input}): ${query.type}`;
+        return `${query.name}(where: _inputWhere${upperFirst(query.input)}): ${query.type}`;
       })
       .join('\n')}
   }`;

@@ -32,6 +32,7 @@ export default (sequelize, DataTypes) => {
   Service.associate = models => {
     Service.belongsTo(models.country);
     Service.belongsTo(models.category);
+    Service.hasOne(models.metadata);
   };
 
   return Service;

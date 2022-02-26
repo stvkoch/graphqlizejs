@@ -10,8 +10,24 @@ const {
   GraphQLTime,
 } = require('graphql-iso-date');
 
-function getModelName(model) {
-  return model.options.gqName || upperFirst(model.tableName);
+const modelNames = {}
+export function storeModelNames (sequelize) {
+  Object.values(sequelize.models).forEach(model => {
+    const name = model.tableName.toLowerCase()
+    const gqName = (model.options.gqName || name).toLowerCase()
+    const singularModelName = Sequelize.Utils.singularize(name).toLowerCase();
+    const pluralModelName = Sequelize.Utils.pluralize(name).toLowerCase();
+    const singularGqName = Sequelize.Utils.singularize(gqName).toLowerCase();
+    const pluralGqName = Sequelize.Utils.pluralize(gqName).toLowerCase();
+
+    modelNames[singularModelName] = singularGqName
+    modelNames[pluralModelName] = pluralGqName
+    modelNames[name] = gqName
+  })
+}
+
+export function getModelName(model) {
+  return upperFirst((modelNames[model.tableName || model] || model).toLowerCase() )
 }
 function defaultMiddleware(f) {
   return f;
@@ -42,7 +58,7 @@ export function resolvers(
   pubsub,
   getAdditionalresolvers = _ => ({})
 ) {
-
+  storeModelNames (sequelize)
   const additionalResolvers = {
     JSON: GraphQLJSON,
     JSONB: GraphQLJSONObject,
@@ -79,7 +95,7 @@ export function resolvers(
           const associationFieldNameType = upperFirst(associationFieldName);
 
           accAssoc[
-            associationFieldName
+            getModelName(associationFieldName).toLowerCase()
           ] = association.target.options.gqMiddleware.query(
             (parent, args, context, info) => {
               return parent['get' + associationFieldNameType](
@@ -89,7 +105,7 @@ export function resolvers(
           );
           if (association.isMultiAssociation)
             accAssoc[
-              `_${associationFieldName}Count`
+              `_${getModelName(associationFieldName).toLowerCase()}Count`
             ] = association.target.options.gqMiddleware.queryCount(
               (parent, args, context, info) => {
                 return parent['get' + associationFieldNameType]({
