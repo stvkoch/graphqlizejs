@@ -60,6 +60,7 @@ export function storeModelNames (sequelize) {
   })
 }
 
+
 export function getModelName(model) {
   return upperFirst((modelNames[model.tableName || model] || model).toLowerCase() )
 }

@@ -27,7 +27,6 @@ export default (sequelize, DataTypes) => {
 
   Product.associate = (models) => {
     Product.belongsTo(models.category);
-    Product.hasOne(models.metadata);
     Product.belongsToMany(models.order, { through: 'orderproduct' });
   };
 
