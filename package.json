@@ -60,7 +60,7 @@
     "lodash.times": "^4.3.2",
     "lodash.uniqby": "^4.7.0",
     "mocha": "^10.1.0",
-    "mysql2": "^1.7.0",
+    "mysql2": "^3.9.8",
     "nodemon": "^1.19.4",
     "pg": "^7.18.2",
     "prettier": "^1.19.1",
