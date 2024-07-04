@@ -70,6 +70,7 @@
     "sqlite3": "^5.1.7"
   },
   "overrides": {
-    "braces": "3.0.3"
+    "braces": "3.0.3",
+    "lodash": "4.17.21"
   }
 }
